@@ -1,0 +1,1872 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="conifer-map-version" content="0.5">
+<meta name="conifer-map-edited" content="2026-05-18">
+<title>Conifer Garden Map — Bermuda Botanical Gardens</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f7f3;color:#1a1a1a;padding:16px}
+.wrap{display:flex;gap:10px;align-items:flex-start}
+.mapcol{flex:1;min-width:0}
+.maplbl{font-size:13px;color:#666;margin-bottom:6px}#map{height:calc(100vh - 100px);min-height:520px;border-radius:10px;border:1px solid #d0d8c6}
+.leg{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:4px;font-size:11px;color:#666}
+.ld{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.lr{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2.5px solid;background:transparent}
+.side{width:340px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.card{background:#fff;border:1px solid #dde5d6;border-radius:10px;padding:14px 16px}
+.clbl{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.tname{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:2px}
+.tsci{font-size:13px;font-style:italic;color:#666;margin-bottom:8px}
+.tsci.placeholder{color:#aaa;font-style:normal}
+svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;border-radius:50%}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-right:4px}
+.bt{background:#FAEEDA;color:#633806}
+.bu{background:#ededec;color:#555}
+.bc{background:#dff0da;color:#2e6e27}
+.genusbadge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px}
+.dtbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.dtbl td{padding:3px 0;vertical-align:top}
+.dtbl td:first-child{color:#888;width:72px;padding-right:6px}
+.confbar{margin-top:8px}
+.conflbl{font-size:11px;color:#999;margin-bottom:3px}
+.conftrack{height:5px;border-radius:3px;background:#e0e0e0;overflow:hidden}
+.conffill{height:100%;border-radius:3px}
+.nbox{margin-top:8px;background:#f4f7f2;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.55;color:#555}
+.altbox{margin-top:6px;padding:6px 10px;border-radius:8px;border-left:2px solid #BA7517;background:#f4f7f2;font-size:11px;color:#555}
+.extlink{display:block;margin-top:8px;font-size:12px;color:#185FA5;text-decoration:none}
+.extlink:hover{text-decoration:underline}
+.photos{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:10px}
+.photo-slot{position:relative;height:120px;border-radius:8px;overflow:hidden;background:#f2f4f0;border:1.5px solid #dde5d6}
+.photo-slot img{width:100%;height:100%;object-fit:cover}
+.photo-slot .plabel{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:9px;color:#fff;background:rgba(0,0,0,0.45);padding:2px 0;font-weight:500}
+.photo-slot.empty{border-style:dashed;border-color:#bbc;display:flex;align-items:center;justify-content:center}
+.photo-slot.empty .plabel{position:static;color:#aaa;background:none;font-size:10px;padding:0}
+.stats{display:flex}
+.stat{flex:1;text-align:center;padding:5px 0}
+.stat+.stat{border-left:1px solid #eee}
+.snum{font-size:19px;font-weight:600}
+.slbl{font-size:11px;color:#999}
+.gps-note{font-size:10px;color:#666;background:#f4f7f2;border:1px solid #dde5d6;border-radius:6px;padding:4px 8px;margin-top:6px}
+.excel-flag{font-size:11px;color:#7a4a00;background:#fff8e6;border:1px solid #f0d080;border-radius:6px;padding:7px 10px;margin-top:8px;line-height:1.5}
+.addbtn{font-size:12px;padding:5px 13px;cursor:pointer;border-radius:8px;border:1px solid #dde5d6;background:#fff;color:#1a1a1a;margin-left:6px}
+.addbtn:hover{background:#f4f7f2}
+.addbtn.active{background:#BA7517;color:#fff;border-color:#BA7517}
+.add-banner{font-size:11px;background:#fff8e6;border:1px solid #f0d080;color:#7a4a00;border-radius:6px;padding:5px 10px;margin-bottom:8px;display:none}
+.add-form-card{background:#fff;border:2px solid #BA7517;border-radius:10px;padding:14px 16px;display:none}
+.add-form-card .clbl{margin-bottom:8px}
+.add-field{margin-bottom:8px}
+.add-field label{font-size:11px;color:#888;display:block;margin-bottom:3px}
+.add-field input,.add-field textarea{width:100%;padding:6px 9px;font-size:12px;border:1px solid #dde5d6;border-radius:7px;outline:none;font-family:inherit;resize:vertical}
+.add-field input:focus,.add-field textarea:focus{border-color:#BA7517}
+.add-confirm-row{display:flex;gap:6px;margin-top:10px}
+.add-confirm-row button{flex:1;padding:7px;font-size:12px;cursor:pointer;border-radius:8px}
+.photo-slot img{cursor:pointer}.photo-slot img:hover{opacity:0.88}
+#lightbox{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center}
+#lb-bg{position:absolute;inset:0;background:rgba(0,0,0,0.88);cursor:pointer}
+#lb-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center}
+#lb-img{max-width:80vw;max-height:80vh;object-fit:contain;border-radius:8px;box-shadow:0 4px 32px rgba(0,0,0,0.5)}
+#lb-caption{color:#ddd;font-size:12px;margin-top:10px;letter-spacing:.03em}
+#lb-close{position:fixed;top:16px;right:16px;z-index:10002;width:28px;height:28px;border-radius:50%;border:none;background:#fff;font-size:17px;line-height:1;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center}
+#lb-close:hover{background:#f0f0f0}
+.lb-nav{background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:42px;height:42px;font-size:30px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;padding:0;z-index:10002}
+.lb-nav:hover{background:rgba(255,255,255,0.3)}
+#lb-prev{position:fixed;left:16px;top:50%;transform:translateY(-50%)}
+#lb-next{position:fixed;right:16px;top:50%;transform:translateY(-50%)}
+.navrow{display:flex;gap:6px;margin-top:10px}
+.navbtn{flex:1;padding:6px 5px;font-size:11px;cursor:pointer;border-radius:8px;border:1px solid #dde5d6;background:#f4f7f2;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.navbtn:hover{background:#e8f0e4}
+.printbtn{font-size:12px;padding:5px 13px;cursor:pointer;border-radius:8px;border:1px solid #dde5d6;background:#fff;color:#1a1a1a;margin-left:auto;display:block;margin-top:8px}
+#filterbtn{display:none}
+.printbtn:hover{background:#f4f7f2}
+#printview{display:none;padding:16px}
+.pt-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.pt-bar h1{font-size:17px;font-weight:700;flex:1}
+.pt-bar p{font-size:12px;color:#666}
+.pt-act{font-size:12px;padding:5px 13px;cursor:pointer;border-radius:8px;border:1px solid #dde5d6;background:#fff}
+.pt-act:hover{background:#f4f7f2}
+.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pc{border:1px solid #dde5d6;border-radius:10px;padding:13px;background:#fff;break-inside:avoid;page-break-inside:avoid}
+.pc-head{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.pc-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.pc-names h2{font-size:13px;font-weight:600;margin:0 0 1px}
+.pc-names p{font-size:11px;font-style:italic;color:#666;margin:0}
+.pc-badges{margin-bottom:7px}
+.pc .dtbl td{padding:2px 0;font-size:11px}
+.pc .dtbl td:first-child{width:62px;color:#888}
+.pc .confbar{margin:5px 0}
+.pc .conflbl{font-size:10px;color:#999;margin-bottom:2px}
+.pc .conftrack{height:4px}
+.pc .photos{margin-top:7px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+.pc .photo-slot{height:100px}
+.pc .nbox{margin-top:7px;font-size:11px;padding:6px 8px;line-height:1.5}
+.pc .gps-note{margin-top:5px;font-size:10px}
+.filter-sidebar{width:160px;flex-shrink:0;background:#fff;border:1px solid #dde5d6;border-radius:10px;padding:10px 10px;overflow-y:auto;max-height:calc(100vh - 100px);align-self:flex-start}
+.fsb-section{margin-bottom:8px}
+.fsb-lbl{font-size:10px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.fsb-item{display:block;font-size:11px;color:#444;padding:2px 0;cursor:pointer;line-height:1.4}
+.fsb-item input{margin-right:4px;cursor:pointer}
+.fsearch-input{width:100%;padding:4px 7px;font-size:11px;border:1px solid #dde5d6;border-radius:7px;outline:none;font-family:inherit}
+.fsearch-input:focus{border-color:#1D9E75}
+.fsb-clear{font-size:10px;padding:4px 8px;cursor:pointer;border-radius:7px;border:1px solid #dde5d6;background:#f4f7f2;color:#555;width:100%;margin-top:4px}
+.fsb-clear:hover{background:#e8f0e4}
+.fsb-count{font-size:10px;color:#999;margin-top:5px;text-align:center}
+.photo-date{font-size:10px;color:#999;margin-top:3px;text-align:right;padding-right:2px}
+.more-photos-btn{font-size:11px;padding:4px 10px;cursor:pointer;border-radius:7px;border:1px solid #dde5d6;background:#f4f7f2;color:#555;margin-top:6px;width:100%;text-align:left}
+.more-photos-btn:hover{background:#e8f0e4}
+.lv-dropdown{position:relative;display:inline-block}
+.lv-dd-btn{font-size:12px;padding:4px 10px;cursor:pointer;border-radius:7px;border:1px solid #dde5d6;background:#f4f7f2;color:#444;white-space:nowrap}
+.lv-dd-btn:hover{background:#e8f0e4}.lv-dd-btn.active{background:#dff0da;border-color:#a8d4a0;color:#1a5c18}
+.lv-dd-panel{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:200;background:#fff;border:1px solid #dde5d6;border-radius:8px;padding:8px 12px;min-width:160px;box-shadow:0 4px 14px rgba(0,0,0,0.13);max-height:260px;overflow-y:auto}
+.lv-dd-panel.open{display:block}
+.lv-dd-panel label{display:block;font-size:12px;padding:3px 0;cursor:pointer;white-space:nowrap}
+.lv-dd-panel label input{margin-right:5px;cursor:pointer}
+@media (max-width:768px){
+  .filter-sidebar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;max-height:70vh;border-radius:14px 14px 0 0;border-bottom:none;overflow-y:auto}
+  .filter-sidebar.mobile-open{display:block}
+  #filter-backdrop{display:none;position:fixed;inset:0;z-index:499;background:rgba(0,0,0,0.4)}
+  #filter-backdrop.open{display:block}
+  #filterbtn{display:block}
+  body.lv-open{overflow-y:auto;height:auto}
+  body{padding:0;overflow:hidden;height:100vh}
+  .wrap{flex-direction:column;gap:0;height:100vh;overflow:hidden}
+  .mapcol{flex-shrink:0;padding:8px 8px 0}
+  #map{height:40vh;min-height:200px;border-radius:6px}
+  .leg{gap:5px;margin-top:6px;padding-bottom:4px}
+  .side{width:100%;flex-shrink:unset;flex:1;min-height:0;overflow-y:auto;padding:8px}
+  .photos{grid-template-columns:1fr 1fr 1fr}
+  .photo-slot{height:60px}
+  .pt-grid{grid-template-columns:1fr}
+}
+@media (max-width:800px){
+  .side{font-size:14px}
+  .tname{font-size:17px}
+  .dtbl td{font-size:13px;padding:6px 4px}
+  .photo-slot{height:88px}
+  .navbtn,.addbtn{min-height:40px;min-width:40px;padding:8px 12px;font-size:14px}
+  .printbtn{min-height:40px;padding:8px 10px;font-size:13px;margin-top:0}
+  .leaflet-tooltip{font-size:13px;padding:6px 8px}
+}
+@media print{
+  .wrap,#printview .pt-act{display:none!important}
+  #printview{display:block!important;padding:4px}
+  body{padding:6px;background:#fff}
+  .pt-grid{grid-template-columns:1fr 1fr}
+  .pc{border:1px solid #bbb;margin-bottom:0}
+  .pt-bar p{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="filter-backdrop" onclick="toggleMobileFilter()"></div>
+<div class="wrap">
+  <div class="filter-sidebar">
+    <p class="clbl" style="margin-bottom:8px">Filter &amp; Search</p>
+    <div class="fsb-section">
+      <input type="text" id="fsearch" class="fsearch-input" placeholder="Search name, ID…" oninput="applyFilters()">
+    </div>
+    <div class="fsb-section" id="fsb-fam"></div>
+    <div class="fsb-section" id="fsb-genus"></div>
+    <div class="fsb-section">
+      <div class="fsb-lbl">Confidence</div>
+      <label class="fsb-item"><input type="checkbox" class="fconf" value="low" onchange="applyFilters()"> Low (0–40%)</label>
+      <label class="fsb-item"><input type="checkbox" class="fconf" value="med" onchange="applyFilters()"> Medium (40–70%)</label>
+      <label class="fsb-item"><input type="checkbox" class="fconf" value="high" onchange="applyFilters()"> High (70–100%)</label>
+    </div>
+    <button class="fsb-clear" onclick="clearFilters()">Clear filters</button>
+    <div id="fcount" class="fsb-count"></div>
+  </div>
+  <div class="mapcol">
+    <div style="display:flex;align-items:center;margin-bottom:6px">
+      <p class="maplbl" style="margin:0;flex:1">Conifer garden — Bermuda Botanical Gardens &middot; <span id="speccount">57</span> specimens</p>
+      <button class="addbtn" id="filterbtn" onclick="toggleMobileFilter()">Filter</button>
+      <button class="printbtn" style="margin:0" onclick="openPrint()">List View</button>
+      <button class="addbtn" id="addbtn" onclick="toggleAddMode()">Add Tree</button>
+      <button class="addbtn" id="exportbtn" onclick="exportAddedCSV()" title="Download CSV of trees added via map" style="display:none">Export to CSV</button>
+    </div>
+    <div class="add-banner" id="addbanner">Click anywhere inside the garden to place a new tree marker.</div>
+    <div id="map"></div>
+    <div class="leg">
+      <span style="font-size:11px;color:#999;margin-right:4px">Status:</span>
+      <div class="li"><div class="ld" style="background:#1D9E75"></div>Confirmed</div>
+      <div class="li"><div class="ld" style="background:#BA7517"></div>Tentative</div>
+      <div class="li"><div class="ld" style="background:#888780"></div>Unknown</div>
+      <span style="font-size:11px;color:#999;margin-left:8px;margin-right:4px">Genus:</span>
+      <div class="li"><div class="lr" style="border-color:#0B6E5A"></div>Juniperus</div>
+      <div class="li"><div class="lr" style="border-color:#D85A30"></div>Hesperocyparis</div>
+      <div class="li"><div class="lr" style="border-color:#7F77DD"></div>Chamaecyparis</div>
+      <div class="li"><div class="lr" style="border-color:#378ADD"></div>Platycladus</div>
+      <div class="li"><div class="lr" style="border-color:#C47030"></div>Araucaria</div>
+      <div class="li"><div class="lr" style="border-color:#B8A800"></div>Ginkgo</div>
+      <div class="li"><div class="lr" style="border-color:#A87832"></div>Cupressus</div>
+      <div class="li"><div class="lr" style="border-color:#4E9858"></div>Thuja</div>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="add-form-card" id="addcard">
+      <p class="clbl">New specimen</p>
+      <div class="add-field">
+        <label>Provisional name</label>
+        <input id="add-name" type="text" placeholder="e.g. Unknown Conifer">
+      </div>
+      <div class="add-field">
+        <label>Notes (optional)</label>
+        <textarea id="add-notes" rows="3" placeholder="Location notes, initial observations..."></textarea>
+      </div>
+      <div class="add-confirm-row">
+        <button onclick="confirmAdd()" style="border:none;background:#1D9E75;color:#fff;font-weight:600">Confirm</button>
+        <button onclick="cancelAdd()" style="border:1px solid #dde5d6;background:#f4f7f2;color:#1a1a1a">Cancel</button>
+      </div>
+    </div>
+    <div class="card">
+      <p class="clbl">Selected specimen</p>
+      <p class="tname" id="pname">Click a marker</p>
+      <p class="tsci placeholder" id="psci">Hover over any marker to preview, click for full details</p>
+      <div class="photos" id="pphotos" style="display:none"></div>
+      <button id="pmorebtn" class="more-photos-btn" style="display:none" onclick="toggleMorePhotos()"></button>
+      <div class="photos" id="pmorePhotos" style="display:none"></div>
+      <div id="pphotodate" class="photo-date" style="display:none"></div>
+      <div class="navrow" id="pnav" style="display:none">
+        <button class="navbtn" id="prevbtn" onclick="navTree(-1)"></button>
+        <button class="navbtn" id="nextbtn" onclick="navTree(1)"></button>
+      </div>
+      <div id="pbody" style="display:none">
+        <table class="dtbl">
+          <tr><td>Family</td><td id="pfam"></td></tr>
+          <tr><td>Genus</td><td id="pgen"></td></tr>
+          <tr><td>Species</td><td id="pspe"></td></tr>
+          <tr id="rcone"><td>Cones</td><td id="pcone"></td></tr>
+          <tr id="rform"><td>Form</td><td id="pform"></td></tr>
+          <tr id="rbark"><td>Bark</td><td id="pbark"></td></tr>
+          <tr id="rheight"><td>Height</td><td id="pheight"></td></tr>
+          <tr id="rfoliage"><td>Foliage</td><td id="pfoliage"></td></tr>
+          <tr id="rdistfeat"><td>Dist. features</td><td id="pdistfeat"></td></tr>
+          <tr id="rnotes"><td>Field notes</td><td id="pnotes"></td></tr>
+          <tr id="robserved" style="display:none"><td>Last obs.</td><td id="pobserved"></td></tr>
+        </table>
+        <div class="confbar">
+          <div class="conflbl" id="pclbl"></div>
+          <div class="conftrack"><div class="conffill" id="pcfill"></div></div>
+        </div>
+        <div id="pchallenge-wrap" style="display:none">
+          <div class="conflbl" style="margin-top:10px;margin-bottom:3px">Field Actions</div>
+          <div class="nbox" id="pchallenge"></div>
+        </div>
+        <div class="altbox" id="palt" style="display:none"></div>
+        <a class="extlink" id="plink" href="#" target="_blank" style="display:none"></a>
+        <div class="gps-note" id="pgps" style="display:none"></div>
+        <div class="excel-flag" id="pexcelflag" style="display:none"></div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="clbl">Survey progress</p>
+      <div class="stats">
+        <div class="stat"><div class="snum" style="color:#1D9E75" id="sc">0</div><div class="slbl">confirmed</div></div>
+        <div class="stat"><div class="snum" style="color:#BA7517" id="st">0</div><div class="slbl">tentative</div></div>
+        <div class="stat"><div class="snum" style="color:#888780" id="su">0</div><div class="slbl">unknown</div></div>
+      </div>
+      <div style="font-size:10px;color:#888;margin-top:8px;">Survey state v0.5 &middot; 2026-05-18</div>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox">
+  <div id="lb-bg"></div>
+  <div id="lb-inner">
+    <button id="lb-close" aria-label="Close lightbox">&times;</button>
+    <img id="lb-img" src="" alt="">
+    <p id="lb-caption"></p>
+  </div>
+  <button id="lb-prev" class="lb-nav" aria-label="Previous photo">&#8249;</button>
+  <button id="lb-next" class="lb-nav" aria-label="Next photo">&#8250;</button>
+</div>
+
+<div id="printview">
+  <div class="pt-bar">
+    <h1>Conifer Garden Survey &mdash; Bermuda Botanical Gardens</h1>
+    <p id="pt-date"></p>
+    <div class="print-filters" style="width:100%;margin-bottom:10px;font-size:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+      <input type="text" id="lvsearch" placeholder="Search name, ID…" oninput="rebuildPrintGrid()" style="padding:4px 8px;font-size:12px;border:1px solid #dde5d6;border-radius:7px;outline:none;font-family:inherit;width:170px">
+      <div class="lv-dropdown">
+        <button class="lv-dd-btn" id="lvdd-status-btn" onclick="toggleLvDd('lvdd-status')">Status ▾</button>
+        <div class="lv-dd-panel" id="lvdd-status">
+          <label><input type="checkbox" class="lvstatus" value="Confirmed" onchange="rebuildPrintGrid()"> ● Confirmed</label>
+          <label><input type="checkbox" class="lvstatus" value="Tentative" onchange="rebuildPrintGrid()"> ▲ Tentative</label>
+          <label><input type="checkbox" class="lvstatus" value="Unknown" onchange="rebuildPrintGrid()"> ? Unknown</label>
+        </div>
+      </div>
+      <div class="lv-dropdown">
+        <button class="lv-dd-btn" id="lvdd-genus-btn" onclick="toggleLvDd('lvdd-genus')">Genus ▾</button>
+        <div class="lv-dd-panel" id="lvdd-genus"><!-- populated by openPrint --></div>
+      </div>
+      <div class="lv-dropdown">
+        <button class="lv-dd-btn" id="lvdd-species-btn" onclick="toggleLvDd('lvdd-species')">Species ▾</button>
+        <div class="lv-dd-panel" id="lvdd-species"><!-- populated by openPrint --></div>
+      </div>
+    </div>
+    <button class="pt-act" onclick="window.print()">Print / Save PDF</button>
+    <button class="pt-act" onclick="closePrint()">Close</button>
+  </div>
+  <div class="pt-grid" id="pt-grid"></div>
+</div>
+
+<script>
+const GBG={Juniperus:"#DAF0EC",Hesperocyparis:"#FAECE7",Chamaecyparis:"#EEEDFE",Platycladus:"#E6F1FB",Araucaria:"#FDF0E6",Ginkgo:"#FDFBE6",Cupressus:"#F5E8D8",Thuja:"#E2EFE2"};
+const GTX={Juniperus:"#085041",Hesperocyparis:"#712B13",Chamaecyparis:"#3C3489",Platycladus:"#0C447C",Araucaria:"#6B3310",Ginkgo:"#5A4A00",Cupressus:"#6B4A1A",Thuja:"#2E5B2E"};
+const GCOL={Juniperus:"#0B6E5A",Hesperocyparis:"#D85A30",Chamaecyparis:"#7F77DD",Platycladus:"#378ADD",Araucaria:"#C47030",Ginkgo:"#B8A800",Cupressus:"#A87832",Thuja:"#4E9858"};
+const SCOLS={Confirmed:"#1D9E75",Tentative:"#BA7517",Unknown:"#888780"};
+const BCLS={Confirmed:"bc",Tentative:"bt",Unknown:"bu"};
+const SSYM={Confirmed:"●",Tentative:"▲",Unknown:"?"};
+
+// ── TREE DATA ─────────────────────────────────────────────────────────────────
+// GPS: lat/lng values below were captured per specimen at the location.
+// Precision: 6 decimal places (~0.11 m at this latitude). Update by long-pressing
+// in Google Maps and pasting decimal coordinates.
+// Format: lat (decimal N positive), lng (decimal W as negative number).
+const T = {
+  1: {
+    name:"Mediterranean Cypress", sci:"Cupressus sempervirens",
+    genus:"Cupressus", species:"sempervirens",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.2,
+    foliage:"Green sprays of foliage, rope-like with smaller offshoots",
+    cone:"No cones observed", form:"Columnar form with upright branches",
+    bark:"Grey-brown bark, exfoliating in strips", height:null,
+    notes:"Similar form to Italian cypress. Brown patches of dieback.", distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/cupressus-sempervirens",
+    challenge:"Look for small round woody cones (2–3cm, 8–14 scales) which would confirm it. No cones observed.",
+    lastObserved:"18 May 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T1_Foliage1.png", form:"https://mjacoleman91.github.io/bbs-plant-photos/T1_Form.png", cone:null},
+    lat:32.293746, lng:-64.762959
+  },
+  2: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Rope-like scaled foliage",
+    cone:"Greenish/yellow male cones buds turning to light brown", form:"Irregular upright shape, rope like branchlets",
+    bark:"Bark exfoliating in thin strips", height:null,
+    notes:"Patches of brown dieback", distfeat:"Irregular shape is consistent with Bermuda Cedar form", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:"Bark exfoliating in thin strips — peel a small piece; this is one of the most reliable field characters and is described specifically by conifers.org. Branchlet width — measure a branchlet: should be 1.3–1.6 mm wide. This is narrower than J. virginiana (about 2/3 the width). Thin exfoliating strips.",
+    lastObserved:"21 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T2_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T2_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T2_Cone.jpg"},
+    lat:32.293721, lng:-64.763141
+  },
+  3: {
+    name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
+    genus:"Juniperus", species:"chinensis 'Kaizuka'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense conical foliage with lime green new foliage",
+    cone:"Spherical young green/blue cones. Maturing to deep brown.", form:"Upright, twisty/waved form.",
+    bark:null, height:null,
+    notes:"Completed crush test - smell was mild so unlikely to be J. sabina", distfeat:"The upright wavy form, and young blue, spherical cones suggests Hollywood juniper", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-chinensis-kaizuka",
+    challenge:"Check each needle for a white stomatal band — present = J. conferta, absent = J. procumbens. Update species once determined. The are more scaled foliage rather than needles so this test is inconclusive.",
+    lastObserved:"21 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T3_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T3_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T3_Cone.jpg"},
+    lat:32.293686, lng:-64.763028
+  },
+  4: {
+    name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
+    genus:"Platycladus", species:"orientalis",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Sprays of vertical green foliage",
+    cone:"Young cones are green/blue with hooked scale tips", form:"Conical shape",
+    bark:null, height:null,
+    notes:null, distfeat:"Distinctive shaped cones with hooked scale tips. Vertical green foliage.", alt:null,
+    link:null,
+    challenge:"A mature seed cone — at 1.5–2 cm long, these are larger than most Juniperus cones and have an unmistakable shape with hooked scale tips. Foliage sprays should be vertical (edge-on to the viewer) rather than horizontal — this separates Platycladus from Thuja, which has horizontal flat sprays. Foliage sprays are vertical. Found young cone which is unusual shap with hooked scale tips.",
+    lastObserved:"21 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T4_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T4_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T4_Cone.jpg"},
+    lat:32.293735, lng:-64.76303
+  },
+  5: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Silvery/blue rope-like scale foliage in dense clusters",
+    cone:"Spherical, soccer ball shape, blue when young", form:"Low growing, horizontal, silvery/blue foliage",
+    bark:null, height:null,
+    notes:"Glaucous cultivar prostrate juniper, also considered J. squamata 'Blue Star' or J. chinensis 'Pfitzerana Glauca'", distfeat:null, alt:null,
+    link:"https://plants.ces.ncsu.edu/plants/juniperus-x-pfitzeriana/",
+    challenge:"Measure cone size (should be 5–8 mm). Check if plant roots along branches where they touch ground. Compare directly with Tree 7.",
+    lastObserved:"21 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T5_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T5_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T5_Cone.jpg"},
+    lat:32.2937277, lng:-64.76270369
+  },
+  6: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Rope-like scaled foliage",
+    cone:"Young blue cones, with small pyramidal shapes", form:"Loosely pyramid shaped. Bunches of foliage clusters.",
+    bark:"Pale bark", height:null,
+    notes:null, distfeat:"Check the underside of the foliage for white X or Y markings", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:"Leaf underside markings — this is in your \"Distinguishing features\" and it's the right test. C. obtusa has distinctive white lines on the leaf undersides forming a Y or X pattern. Use a hand lens. Upon examination the scale foliage looks very similar to the other Bermuda cedars, just a bit tightly compacted. Now believe it may be another Bermuda cedar.",
+    lastObserved:"21 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T6_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T6_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T6_Cone.jpg"},
+    lat:32.293643, lng:-64.762712
+  },
+  7: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:null,
+    cone:"Small rounded berry-like cones, blue-grey when young", form:"Low growing with silvery/blue foliage",
+    bark:"Dark brown bark", height:null,
+    notes:"Half of plant has died through damage or disease. Is the natural form horizontal or due to damage?", distfeat:null, alt:null,
+    link:null,
+    challenge:"Examine the root zone — is it clearly a single-stemmed plant that's been knocked over, or does it naturally sprawl from a central point? True J. horizontalis has no central trunk. Field research reveals has a central trunk and it has the same cones as Specimen 5 suggesting it's the same species as those.",
+    lastObserved:"21 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T7_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T7_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T7_Cone.jpg"},
+    lat:32.293759, lng:-64.762804
+  },
+  8: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense foliage green with yellow new foliage",
+    cone:"No visible cones", form:"Prostrate form, green",
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:"Crush test is the single most important step. J. sabina has a sharp, foetid, cat-like smell. If pleasant/mild, consider J. procumbens or J. conferta instead.",
+    lastObserved:"21 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T8_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T8_Form.jpg", cone:null},
+    lat:32.293755, lng:-64.762838
+  },
+  9: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense foliage green with yellow new foliage",
+    cone:"No visible cones", form:"Prostrate form, green",
+    bark:null, height:null,
+    notes:"Potentially the same conifer as ID 8", distfeat:null, alt:null,
+    link:null,
+    challenge:"Crush test is the single most important step. J. sabina has a sharp, foetid, cat-like smell. If pleasant/mild, consider J. procumbens or J. conferta instead. Compare directly with Tree 8 — are they the same plant?",
+    lastObserved:"21 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T9_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T9_Form.jpg", cone:null},
+    lat:32.29374, lng:-64.762983
+  },
+  10: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Strands of green/yellow foliage",
+    cone:"Young blue spherical cones", form:"Upright, irregular shape",
+    bark:"Gray bark", height:"4 metres",
+    notes:"Bark appears lighter than some of the other Bermuda Cedars in the garden. Form is also more irregular", distfeat:"Foliage, cones and upright form point towards Bermuda cedar.", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:"Measure branchlet width and compare against confirmed ID 15 nearby. Note whether lighter bark is consistent across the whole tree.",
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T10_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T10_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T10_Bark.jpg"},
+    lat:32.293595, lng:-64.762772
+  },
+  11: {
+    name:"Juniper Hetzii", sci:"Juniperus x pfitzeriana 'Hetzii Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Hetzii Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Dense, fine-textured, slightly bluish-green sprays of scaled foliage",
+    cone:"No cones", form:"Irregular form, trailing along ground in a weeping fashion",
+    bark:"Flakey brown bark, gnarled trunk and exposed central stem.", height:"1.5 metres",
+    notes:null, distfeat:null, alt:null,
+    link:"https://plants.ces.ncsu.edu/plants/juniperus-chinensis-hetzii-glauca/",
+    challenge:"J. procumbens 'Nana' not recorded in Bermuda and height (1.5m) too tall for 'Nana'. Reconsider as J. chinensis cultivar. Check for retained dead foliage inside plant. Checked and no retained dead foliage.",
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T11_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T11_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T11_Bark.jpg"},
+    lat:32.293529, lng:-64.762910
+  },
+  12: {
+    name:"Juniper Hetzii", sci:"Juniperus x pfitzeriana 'Hetzii Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Hetzii Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Silvery blue foliage",
+    cone:"No cones", form:"Irregular form, ascending branches, widespread with main trunk trailing along ground in places.",
+    bark:"Flakey brown bark", height:"1.5 metres",
+    notes:null, distfeat:"Ascending branches, widespread.", alt:null,
+    link:"https://plants.ces.ncsu.edu/plants/juniperus-chinensis-hetzii-glauca/",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T12_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T12_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T12_Bark.jpg"},
+    lat:32.293546, lng:-64.762868
+  },
+  13: {
+    name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
+    genus:"Platycladus", species:"orientalis",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Yellow clusters of scaled foliage",
+    cone:"Groups of young blue cones, spherical with hooked tips", form:"Irregular multi stemmed",
+    bark:"Brown flakey bark", height:"2.5 metres",
+    notes:null, distfeat:"Yellow tipped scaled foliage and young blue cones with hooked tips", alt:null,
+    link:null,
+    challenge:"Find a mature seed cone to push confidence to 80%+. Record height.",
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T13_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T13_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T13_Bark.jpg"},
+    lat:32.293423, lng:-64.762837
+  },
+  14: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense blue foliage",
+    cone:"No cones visible", form:"Irregular form, sort of creeping but also weeping.",
+    bark:"Flakey brown bark", height:"3 metres",
+    notes:null, distfeat:"The form on this specimen is more upright, i.e. higher than the other Pfitzer Juniper.", alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T14_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T14_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T14_Bark.jpg"},
+    lat:32.293367, lng:-64.762815
+  },
+  15: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Confirmed",
+    conf:1.0,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"Young blue cones with small points. Maturing to light brown / yellow coarse textured spherical cone.", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in large strands", height:null,
+    notes:"Tree has a label denoting it's a Bermuda cedar", distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T15_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T15_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T15_Bark.jpg"},
+    lat:32.293358, lng:-64.762880
+  },
+  16: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"No cones observed", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark, exfoliating in large strips", height:null,
+    notes:null, distfeat:"Similar features to ID 15, however does not have blue cones.", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T16_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T16_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T16_Bark.jpg"},
+    lat:32.293385, lng:-64.762981
+  },
+  17: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Sharply pointed awl-shaped leaves",
+    cone:"No cones observed", form:"Upright form, green with yellow tinged young foliage",
+    bark:null, height:"1 metre",
+    notes:"Young version of the Bermuda cedar? Young specimen", distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T17_Form.jpg", cone:null},
+    lat:32.293399, lng:-64.763078
+  },
+  18: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Sharply pointed awl-shaped leaves",
+    cone:"No cones observed", form:"Upright form, green with yellow tinged young foliage",
+    bark:null, height:"0.5 metres",
+    notes:null, distfeat:"Young version of the Bermuda cedar? Young specimen", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T18_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T18_Form.jpg", cone:null},
+    lat:32.293460, lng:-64.763129
+  },
+  19: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Some foliage is sharply spiked, while older foliage is rope-like and scaled.",
+    cone:"No cones observed.", form:"Upright form, green with yellow tinged younger foliage",
+    bark:null, height:"0.3 metres",
+    notes:"Young Bermuda cedar indicated by the rope-like older foliage.", distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T19_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T19_Form.jpg", cone:null},
+    lat:32.293414, lng:-64.763178
+  },
+  20: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"Young blue berry-shaped cones with small hooked points", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in large strands", height:null,
+    notes:null, distfeat:"Blue berry like cones and irregular shape with scaled, ropey foliage", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:"Measure branchlet width.",
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T20_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T20_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T20_Bark.jpg"},
+    lat:32.293418, lng:-64.763225
+  },
+  21: {
+    name:"Norfolk Island Pine", sci:"Araucaria heterophylla",
+    genus:"Araucaria", species:"heterophylla",
+    fam:"Araucariaceae", status:"Confirmed",
+    conf:1.0,
+    foliage:null,
+    cone:null, form:null,
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/araucaria-heterophylla",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T21_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T21_Bark.jpg"},
+    lat:32.293420, lng:-64.763251
+  },
+  22: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scale-like golden tipped foliage, green older foliage",
+    cone:"No visible cones", form:"Spreading evergreen",
+    bark:null, height:"0.6 metres",
+    notes:null, distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-pfitzeriana-pfitzeriana-aurea",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T22_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T22_Form.jpg", cone:null},
+    lat:32.293622, lng:-64.763307
+  },
+  23: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scale-like golden tipped foliage, green older foliage",
+    cone:"No visible cones", form:"Spreading evergreen",
+    bark:null, height:"0.6 metres",
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T23_Form.jpg", cone:null},
+    lat:32.293653000, lng:-64.763315000
+  },
+  24: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scaled foliage. Blue/Silver new growth",
+    cone:"New cones are spherical and blue.", form:"Spreading evergreen",
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://plantmaster.com/plants/eplant.php?plantnum=752",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T24_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T24_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T24_Bark.jpg"},
+    lat:32.293680000, lng:-64.763322000
+  },
+  25: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scaled foliage. Blue/Silver new growth",
+    cone:"New cones are spherical and blue.", form:"Spreading evergreen",
+    bark:null, height:null,
+    notes:"Appears very similar to Plant ID 24", distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T25_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T25_Form.jpg", cone:null},
+    lat:32.293705000, lng:-64.763331000
+  },
+  26: {
+    name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
+    genus:"Juniperus", species:"chinensis 'Kaizuka'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Scaled foliage in strands, young foliage is lime green",
+    cone:"Small spherical blue cones", form:"Mound form, growing upwards in twisted/wavy fashion with older foliage strands in weeping form",
+    bark:null, height:"2 metres",
+    notes:"Distinctive wavy/twisting upwards growth, dense foliage tufts, bright green.", distfeat:"Spherical blue cones fit the Juniperus genus", alt:null,
+    link:"https://landscapeplants.oregonstate.edu/plants/juniperus-chinensis-torulosa",
+    challenge:"Unconvinced this is a Chinese juniper",
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T26_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T26_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T26_Cone.jpg"},
+    lat:32.293724000, lng:-64.763297000
+  },
+  27: {
+    name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
+    genus:"Juniperus", species:"chinensis 'Kaizuka'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Scaled foliage in strands, young foliage is lime green",
+    cone:"Small spherical blue cones", form:"Mound form, growing upwards in twisted/wavy fashion with older foliage strands in weeping form",
+    bark:null, height:null,
+    notes:"Similar to ID 26, but the foliage is a bit more dense and less flowing.", distfeat:null, alt:null,
+    link:"https://landscapeplants.oregonstate.edu/plants/juniperus-chinensis-torulosa",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T27_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T27_Form.jpg", cone:null},
+    lat:32.293688000, lng:-64.763284000
+  },
+  28: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scaled foliage. Blue/Silver new growth",
+    cone:"New cones are spherical and blue.", form:"Spreading evergreen",
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T28_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T28_Form.jpg", cone:null},
+    lat:32.293657, lng:-64.763272
+  },
+  29: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scale-like golden tipped foliage, green older foliage",
+    cone:"No visible cones", form:"Spreading evergreen",
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T29_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T29_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T29_Cone.jpg"},
+    lat:32.293725000, lng:-64.763352000
+  },
+  30: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scale-like golden tipped foliage, green older foliage",
+    cone:"No visible cones", form:"Spreading evergreen",
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T30_Form.jpg", cone:null},
+    lat:32.293750, lng:-64.763361
+  },
+  31: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"No visible cones", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in long strands", height:null,
+    notes:"A line of 8 Bermuda Cedars planted on the edge of the garden. All roughly the same height - expect they were planted at the same time.", distfeat:"Irregular shape with scaled, ropey foliage", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:"On your next visit, measure branchlet width on a couple of specimens. If consistently 1.3–1.6mm = strong confirmation of J. bermudiana. If narrower (~1mm) = possible J. virginiana or hybrid.",
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T31_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T31_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T31_Bark.jpg"},
+    lat:32.293749, lng:-64.763209
+  },
+  32: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"No visible cones", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in long strands", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T32_Form.jpg", cone:null},
+    lat:32.293757, lng:-64.763145
+  },
+  33: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"No visible cones", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in long strands", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T33_Form.jpg", cone:null},
+    lat:32.293765, lng:-64.763082
+  },
+  34: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"No visible cones", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in long strands", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T34_Form.jpg", cone:null},
+    lat:32.293773, lng:-64.763018
+  },
+  35: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"No visible cones", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in long strands", height:null,
+    notes:"Bark is badly damaged on this specimen - potentially diseased.", distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T35_Form.jpg", cone:null},
+    lat:32.293781, lng:-64.762955
+  },
+  36: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"No visible cones", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in long strands", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T36_Form.jpg", cone:null},
+    lat:32.293789, lng:-64.762891
+  },
+  37: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"No visible cones", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in long strands", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T37_Form.jpg", cone:null},
+    lat:32.293797, lng:-64.762828
+  },
+  38: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope like strands of scaled foliage",
+    cone:"No visible cones", form:"Upright and irregular shape, inverted cone shape",
+    bark:"Gray/Brown bark exfoliating in long strands", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T38_Form.jpg", cone:null},
+    lat:32.293805, lng:-64.762764
+  },
+  39: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Blue/Silver foliage",
+    cone:"No visible cones", form:"Spreading evergreen, prostrate form",
+    bark:null, height:null,
+    notes:"Looks like Arizona cypress foliage, sparse, silvery/blue", distfeat:null, alt:null,
+    link:null,
+    challenge:"Take closer photos of foliage. Cupressus arizonica has scale-like glaucous leaves with white resin dots — check for small white dots on the leaf scales. If present, this could actually be a Cupressus rather than a Juniperus Pfitzer cultivar. Prostrate form argues against Cupressus (which is upright), but a sprawling young specimen is possible.",
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T39_Form.jpg", cone:null},
+    lat:32.293651, lng:-64.763086
+  },
+  40: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Green rope-like scaled foliage, green with light young tips",
+    cone:"Spherical blue young berry like cones with small hooks", form:"Upright, irregular form",
+    bark:null, height:null,
+    notes:"Specimen in poor condition, diseased?", distfeat:"The spherical blue cones suggest it could be a Bermuda cedar", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:"Verified cone type — fleshy berry (Juniperus). Document condition/disease.",
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T40_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T40_Form.jpg", cone:null},
+    lat:32.293680, lng:-64.762991
+  },
+  41: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scale-like golden tipped foliage, green older foliage",
+    cone:"Young blue berry like cones with small hooks", form:"Spreading evergreen, prostrate form",
+    bark:"Brown bark exfoliating in large strips", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T41_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T41_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T41_Bark.jpg"},
+    lat:32.293613, lng:-64.763071
+  },
+  42: {
+    name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
+    genus:"Platycladus", species:"orientalis",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Sprays of green foliage, bumpy projecting scale appearance.",
+    cone:"No visible cones", form:"Upright form, green",
+    bark:"Dark brown bark exfoliating in large strips. Lichen encrusted.", height:"3 metres",
+    notes:"Foliage looks like a Thuja or Chamaecyparis", distfeat:null, alt:null,
+    link:"https://landscapeplants.oregonstate.edu/plants/platycladus-orientalis",
+    challenge:"Crush foliage — Thuja smells fruity/pineapple-like. Check foliage underside for white markings. Look for cones. T. plicata (Pacific NW native) is unusual here — consider T. occidentalis or Platycladus instead.",
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T42_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T42_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T42_Bark.jpg"},
+    lat:32.293590, lng:-64.763062
+  },
+  43: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scaled foliage. Blue/Silver new growth",
+    cone:"New cones are spherical and blue.", form:"Spreading evergreen",
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T43_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T43_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T43_Cone.jpg"},
+    lat:32.293663, lng:-64.762913
+  },
+  44: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scaled foliage. Blue/Silver new growth",
+    cone:"New cones are spherical and blue.", form:"Spreading evergreen",
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T44_Form.jpg", cone:null},
+    lat:32.293616, lng:-64.763027
+  },
+  45: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scale-like golden tipped foliage, green older foliage",
+    cone:"Young blue berry like cones with small hooks", form:"Spreading evergreen, prostrate form",
+    bark:"Brown bark exfoliating in large strips", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T45_Form.jpg", cone:null},
+    lat:32.293617, lng:-64.763007
+  },
+  46: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scaled foliage. Blue/Silver new growth",
+    cone:"New cones are spherical and blue.", form:"Spreading evergreen",
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T46_Form.jpg", cone:null},
+    lat:32.293602, lng:-64.763016
+  },
+  47: {
+    name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
+    genus:"Platycladus", species:"orientalis",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Sprays of green scaled foliage, yellow tips",
+    cone:"No cones", form:"Upright",
+    bark:"Flakey brown strands on bark", height:"3 metres",
+    notes:"Tree is patchy", distfeat:null, alt:null,
+    link:null,
+    challenge:"Find a mature seed cone to confirm. Investigate cause of patchiness — check for scale insect or fungal damage.",
+    lastObserved:"30 April 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T47_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T47_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T47_Bark.jpg"},
+    lat:32.293633, lng:-64.763018
+  },
+  48: {
+    name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
+    genus:"Juniperus", species:"chinensis 'Kaizuka'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.6,
+    foliage:"Bright green clusters of scaled foliage",
+    cone:"Groups of young blue cones, spherical with slighty raised bumps/horns", form:"Irregular multi stemmed growing upwards in twisted fashion",
+    bark:"Brown flakey bark", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://landscapeplants.oregonstate.edu/plants/juniperus-chinensis-torulosa",
+    challenge:null,
+    lastObserved:"30 April 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T48_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T48_Cone.jpg"},
+    lat:32.293660, lng:-64.762954
+  },
+  49: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scaled foliage. Blue/Silver new growth",
+    cone:"New cones are spherical and blue.", form:"Spreading evergreen",
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"12 May 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T49_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T49_Form.jpg", cone:null},
+    lat:32.293706, lng:-64.762948
+  },
+  50: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Dense scale-like golden tipped foliage, green older foliage",
+    cone:"Young blue berry like cones with small hooks", form:"Spreading evergreen, prostrate form",
+    bark:"Brown bark exfoliating in large strips", height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"12 May 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T50_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T50_Form.jpg", cone:null},
+    lat:32.293682, lng:-64.762939
+  },
+  51: {
+    name:"Maidenhair tree", sci:"Ginkgo biloba",
+    genus:"Ginkgo", species:"biloba",
+    fam:"Ginkgoaceae", status:"Confirmed",
+    conf:1.0,
+    foliage:"Fan shaped leaves, light green.",
+    cone:"No cones", form:"Single straight trunk, columnar upright",
+    bark:"Gray bark", height:"6 metres",
+    notes:null, distfeat:"Distinct fan shaped leaves", alt:null,
+    link:"https://conifersociety.org/conifers/ginkgo-biloba",
+    challenge:null,
+    lastObserved:"12 May 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T51_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T51_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T51_Bark.jpg"},
+    lat:32.293353, lng:-64.763216
+  },
+  52: {
+    name:"Maidenhair tree", sci:"Ginkgo biloba",
+    genus:"Ginkgo", species:"biloba",
+    fam:"Ginkgoaceae", status:"Confirmed",
+    conf:1.0,
+    foliage:"Fan shaped leaves, light green.",
+    cone:"No cones", form:"Single straight trunk, columnar upright",
+    bark:"Gray bark", height:"6 metres",
+    notes:null, distfeat:"Distinct fan shaped leaves", alt:null,
+    link:"https://conifersociety.org/conifers/ginkgo-biloba",
+    challenge:null,
+    lastObserved:"12 May 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T52_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T52_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T52_Bark.jpg"},
+    lat:32.293346, lng:-64.763122
+  },
+  53: {
+    name:"Maidenhair tree", sci:"Ginkgo biloba",
+    genus:"Ginkgo", species:"biloba",
+    fam:"Ginkgoaceae", status:"Confirmed",
+    conf:1.0,
+    foliage:"Fan shaped leaves, light green.",
+    cone:"No cones", form:"Single straight trunk, columnar upright",
+    bark:"Gray bark", height:"6 metres",
+    notes:"Labelled specimen", distfeat:"Distinct fan shaped leaves", alt:null,
+    link:"https://www.conifers.org/gi/Ginkgoaceae.php",
+    challenge:null,
+    lastObserved:"12 May 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T53_Foliage.jpg", form:null, cone:"https://mjacoleman91.github.io/bbs-plant-photos/T53_Bark.jpg"},
+    lat:32.293322, lng:-64.763014
+  },
+  54: {
+    name:"Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Green scaled foliage, rope-like",
+    cone:"No cones observed", form:"Prostrate, low growing form",
+    bark:"Pale grey bark exfoliating in large strips", height:"0.3 metres",
+    notes:"Unsure if several specimens or all one plant.", distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"12 May 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T54_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T54_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T54_Cone.jpg"},
+    lat:32.293754, lng:-64.762882
+  },
+  55: {
+    name:"Bermuda Cedar", sci:"Juniperus bermudiana",
+    genus:"Juniperus", species:"bermudiana",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.8,
+    foliage:"Green rope-like scaled foliage, green with light young tips",
+    cone:"Spherical blue young cones with small hooks", form:"Upright, irregular form",
+    bark:null, height:null,
+    notes:null, distfeat:"Young blue spherical cones", alt:null,
+    link:"https://conifersociety.org/conifers/juniperus-bermudiana",
+    challenge:null,
+    lastObserved:"12 May 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T55_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T55_Cone.jpg"},
+    lat:32.293739, lng:-64.762998
+  },
+  56: {
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
+    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:null,
+    cone:null, form:null,
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"12 May 2026",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/T56_Form.jpg", cone:null},
+    lat:32.293737, lng:-64.763016
+  },
+  57: {
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
+    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    fam:"Cupressaceae", status:"Tentative",
+    conf:0.4,
+    foliage:"Silvery/blue rope-like scale foliage in dense clusters",
+    cone:"Spherical, soccer ball shape, blue when young", form:"Low growing, horizontal, silvery/blue foliage",
+    bark:null, height:null,
+    notes:"Glaucous cultivar prostrate juniper, also considered J. squamata 'Blue Star' or J. chinensis 'Pfitzeriana Glauca'", distfeat:null, alt:null,
+    link:null,
+    challenge:null,
+    lastObserved:"12 May 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/T57_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/T57_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/T57_Cone.jpg"},
+    lat:32.293686, lng:-64.762689
+  },
+};
+
+// ── SURVEY STATS ──────────────────────────────────────────────────────────────
+let conf=0, tent=0, unkn=0;
+
+function recomputeStats() {
+  conf = Object.values(T).filter(t => t.status === 'Confirmed').length;
+  tent = Object.values(T).filter(t => t.status === 'Tentative').length;
+  unkn = Object.values(T).filter(t => t.status === 'Unknown').length;
+  document.getElementById('sc').textContent = conf;
+  document.getElementById('st').textContent = tent;
+  document.getElementById('su').textContent = unkn;
+}
+
+recomputeStats();
+
+// ── MAP INIT ──────────────────────────────────────────────────────────────────
+// Centred on Bermuda Botanical Gardens, 169 South Road, Paget Parish, Bermuda
+const map = L.map('map', {zoomControl: true}).setView([32.293556, -64.762834], 19);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+  maxZoom: 21,
+  maxNativeZoom: 19
+}).addTo(map);
+
+// ── GARDEN BOUNDARY ───────────────────────────────────────────────────────────
+// Approximate polygon — refine corners after field visit by walking the boundary
+L.polygon([
+  [32.293766, -64.763384],  // NW corner
+  [32.293859, -64.762499],  // NE corner
+  [32.293498, -64.762245],  // SE corner
+  [32.293100, -64.763207]   // SW corner
+], {
+  color: '#7aaa5a', weight: 2, dashArray: '6,4',
+  fillColor: '#c8ddb8', fillOpacity: 0.2,
+  interactive: false
+}).addTo(map);
+
+// ── POINTS OF INTEREST ────────────────────────────────────────────────────────
+const POIS = [
+  {
+    lat: 32.293539, lng: -64.761640,
+    name: 'The Botanist Café & Garden Lounge',
+    img: 'https://raw.githubusercontent.com/mjacoleman91/bbs-logos/main/The%20Botanist.png'
+  },
+  {
+    lat: 32.293654, lng: -64.761741,
+    name: 'Masterworks Museum of Bermuda',
+    img: 'https://raw.githubusercontent.com/mjacoleman91/bbs-logos/main/Masterworks%20Museum%20Bermuda.png'
+  }
+];
+POIS.forEach(poi => {
+  const icon = L.divIcon({
+    html: `<img src="${poi.img}" style="width:70px;height:70px;object-fit:contain;border-radius:8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))" alt="">`,
+    className: '',
+    iconSize: [70, 70],
+    iconAnchor: [35, 35]
+  });
+  L.marker([poi.lat, poi.lng], {icon})
+    .bindTooltip(poi.name, {direction:'top', offset:[0,-24]})
+    .addTo(map);
+});
+
+const clusterGroup = L.markerClusterGroup({
+  maxClusterRadius: 35,
+  disableClusteringAtZoom: 19,
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false
+});
+map.addLayer(clusterGroup);
+
+// ── MARKER ICON ───────────────────────────────────────────────────────────────
+function makeIcon(id, genus, status, selected) {
+  const gc = GCOL[genus] || '#999';
+  const sc = SCOLS[status] || '#888';
+  const ro = selected ? 14 : 12;
+  const sw = selected ? 3.5 : 2.5;
+  const ri = 8;
+  const dim = (ro + 3) * 2;
+  const c = ro + 3;
+  return L.divIcon({
+    className: '',
+    html: `<svg width="${dim}" height="${dim}" viewBox="0 0 ${dim} ${dim}" xmlns="http://www.w3.org/2000/svg">
+      <g role="button" tabindex="0" aria-label="Specimen ${id}"
+         onkeydown="if(event.key==='Enter'||event.key===' '){this.closest('svg').parentElement.click();event.preventDefault()}">
+        <circle cx="${c}" cy="${c}" r="${ro}" fill="none" stroke="${gc}" stroke-width="${sw}" opacity="0.9"/>
+        <circle cx="${c}" cy="${c}" r="${ri}" fill="${sc}"/>
+        <text x="${c}" y="${c}" text-anchor="middle" dy="3.5" font-size="9"
+              fill="white" font-weight="600" font-family="system-ui,sans-serif">${id}</text>
+      </g>
+    </svg>`,
+    iconSize:   [dim, dim],
+    iconAnchor: [c, c],
+    tooltipAnchor: [ro + 3, 0]
+  });
+}
+
+// ── MARKERS ───────────────────────────────────────────────────────────────────
+let selectedMarker = null;
+let currentId = null;
+const treeIds = Object.keys(T).map(Number).sort((a,b)=>a-b);
+const markers = {};
+
+Object.entries(T).forEach(([id, t]) => {
+  const m = L.marker([t.lat, t.lng], {icon: makeIcon(id, t.genus, t.status, false)})
+    .addTo(clusterGroup)
+    .bindTooltip(
+      `<strong>#${id} ${t.name}</strong><br><em>${t.sci}</em>`,
+      {direction:'right', offset:[10,0], opacity:0.95}
+    );
+  m.on('click', () => showPanel(parseInt(id), m));
+  markers[id] = m;
+});
+
+// ── DATE UTILITIES ────────────────────────────────────────────────────────────
+function parseObsDate(s) {
+  if (!s) return null;
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+function fmtDate(d) {
+  return d.toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+}
+
+// ── DETAIL PANEL ──────────────────────────────────────────────────────────────
+function showPanel(id, marker) {
+  const t = T[id];
+
+  // Reset previously selected marker icon
+  if (selectedMarker) {
+    const prevId = Object.keys(markers).find(k => markers[k] === selectedMarker);
+    if (prevId) selectedMarker.setIcon(makeIcon(prevId, T[prevId].genus, T[prevId].status, false));
+  }
+  marker.setIcon(makeIcon(id, t.genus, t.status, true));
+  selectedMarker = marker;
+
+  document.getElementById('pname').textContent = `#${id} \u2014 ${t.name}`;
+  const sci = document.getElementById('psci');
+  sci.textContent = t.sci; sci.classList.remove('placeholder');
+
+
+  document.getElementById('pfam').textContent = t.fam;
+  document.getElementById('pgen').textContent = t.genus;
+  document.getElementById('pspe').textContent = t.species;
+
+  const sr = (rid, cid, val) => {
+    document.getElementById(rid).style.display = val ? '' : 'none';
+    if (val) document.getElementById(cid).textContent = val;
+  };
+  sr('rcone','pcone',t.cone);
+  sr('rform','pform',t.form);
+  sr('rbark','pbark',t.bark);
+  sr('rheight','pheight',t.height);
+  sr('rfoliage','pfoliage',t.foliage);
+  sr('rdistfeat','pdistfeat',t.distfeat);
+  sr('rnotes','pnotes',t.notes);
+
+  const loRow = document.getElementById('robserved');
+  if (t.lastObserved) {
+    const loDate = parseObsDate(t.lastObserved);
+    const loEl = document.getElementById('pobserved');
+    if (loDate) {
+      const daysAgo = Math.round((Date.now() - loDate.getTime()) / 86400000);
+      loEl.textContent = `${fmtDate(loDate)} (${daysAgo} days ago)`;
+      loEl.style.color = daysAgo > 180 ? '#A05010' : '';
+    } else {
+      loEl.textContent = t.lastObserved;
+      loEl.style.color = '';
+    }
+    loRow.style.display = '';
+  } else {
+    loRow.style.display = 'none';
+  }
+
+  const pct = t.conf !== null ? Math.round(t.conf * 100) : null;
+  const sym = SSYM[t.status] || '';
+  document.getElementById('pclbl').textContent = pct !== null ? `${sym} ${t.status} · Confidence: ${pct}%` : `${sym} ${t.status}`;
+  document.getElementById('pcfill').style.cssText = `width:${pct||0}%;background:${SCOLS[t.status]}`;
+
+  // Build lightbox list: main 3 slots + extra photos
+  const extras = (t.photos && t.photos.extra) ? t.photos.extra : [];
+  lbPhotos = [
+    ...PHOTO_SLOTS.filter(s => t.photos[s.key])
+      .map(s => ({src: t.photos[s.key], caption: `#${id} ${t.name} — ${s.label}`})),
+    ...extras.map(e => ({src: e.src, caption: `#${id} ${t.name} — ${e.label || 'Photo'}`}))
+  ];
+  const pphotos = document.getElementById('pphotos');
+  pphotos.innerHTML = PHOTO_SLOTS.map(s => {
+    const src = t.photos[s.key];
+    if (src) {
+      const i = lbPhotos.findIndex(p => p.src === src);
+      return `<div class="photo-slot"><img src="${src}" alt="${s.label} of specimen #${id} — ${t.name}" onclick="lbOpen(${i})"><span class="plabel">${s.label}</span></div>`;
+    }
+    return `<div class="photo-slot empty"><span class="plabel">${s.label}</span></div>`;
+  }).join('');
+  pphotos.style.display = '';
+
+  // More photos toggle
+  const morebtn = document.getElementById('pmorebtn');
+  const moreGrid = document.getElementById('pmorePhotos');
+  if (extras.length) {
+    const offset = lbPhotos.length - extras.length;
+    moreGrid.innerHTML = extras.map((e, i) => {
+      const li = offset + i;
+      return `<div class="photo-slot"><img src="${e.src}" alt="${e.label||'Photo'} of specimen #${id} — ${t.name}" onclick="lbOpen(${li})"><span class="plabel">${e.label||'Photo'}</span></div>`;
+    }).join('');
+    moreGrid.style.display = 'none';
+    morebtn.textContent = `+ More photos (${extras.length})`;
+    morebtn.style.display = '';
+  } else {
+    morebtn.style.display = 'none';
+    moreGrid.style.display = 'none';
+  }
+
+  // Photo date
+  const pphotodate = document.getElementById('pphotodate');
+  if (t.firstRecorded) {
+    pphotodate.textContent = `First recorded: ${t.firstRecorded}`;
+    pphotodate.style.display = '';
+  } else {
+    pphotodate.style.display = 'none';
+  }
+
+  const chEl = document.getElementById('pchallenge');
+  chEl.textContent = t.challenge || '';
+  document.getElementById('pchallenge-wrap').style.display = t.challenge ? '' : 'none';
+
+  const ab = document.getElementById('palt');
+  t.alt ? (ab.textContent = t.alt, ab.style.display = 'block') : (ab.style.display = 'none');
+
+  const lk = document.getElementById('plink');
+  t.link ? (lk.href = t.link, lk.textContent = 'More information \u2192', lk.style.display = 'block') : (lk.style.display = 'none');
+
+  const pgps = document.getElementById('pgps');
+  if (t.addedViaMap) {
+    pgps.textContent = `GPS: ${t.lat.toFixed(6)}, ${t.lng.toFixed(6)}`;
+    pgps.style.display = 'block';
+  } else {
+    pgps.style.display = 'none';
+  }
+
+  const ef = document.getElementById('pexcelflag');
+  if (t.addedViaMap) {
+    ef.innerHTML = `Added via map on ${t.addedDate}.<br><strong>Update Excel file with field notes for this specimen.</strong>
+      <button onclick="removeAddedTree(${id})" style="margin-top:7px;width:100%;padding:5px;font-size:11px;cursor:pointer;border-radius:6px;border:1px solid #e8a87c;background:#fff3ed;color:#7a2e00">Remove this marker</button>`;
+    ef.style.display = 'block';
+  } else {
+    ef.style.display = 'none';
+  }
+
+  document.getElementById('pbody').style.display = 'block';
+
+  // Nav arrows
+  currentId = id;
+  const idx = treeIds.indexOf(id);
+  const prevId = treeIds[(idx - 1 + treeIds.length) % treeIds.length];
+  const nextId = treeIds[(idx + 1) % treeIds.length];
+  document.getElementById('prevbtn').textContent = `\u2190 #${prevId} ${T[prevId].name}`;
+  document.getElementById('nextbtn').textContent = `#${nextId} ${T[nextId].name} \u2192`;
+  document.getElementById('pnav').style.display = 'flex';
+
+  // On mobile, scroll the details panel back to top so the specimen name is visible
+  if (window.innerWidth <= 768) {
+    document.querySelector('.side').scrollTop = 0;
+  }
+}
+
+function navTree(dir) {
+  if (currentId === null) return;
+  const idx = treeIds.indexOf(currentId);
+  const newId = treeIds[(idx + dir + treeIds.length) % treeIds.length];
+  showPanel(newId, markers[newId]);
+  const ll = L.latLng(T[newId].lat, T[newId].lng);
+  if (!map.getBounds().contains(ll)) map.panTo(ll);
+}
+
+// ── PRINT / EXPORT ────────────────────────────────────────────────────────────
+function buildPrintCard(id) {
+  const t = T[id];
+  const pct = t.conf !== null ? Math.round(t.conf * 100) : 0;
+  const sc = SCOLS[t.status] || '#888';
+  const rows = [['Family',t.fam],['Cones',t.cone],['Form',t.form],['Bark',t.bark],['Field notes',t.notes]]
+    .filter(([,v]) => v)
+    .map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  const photos = PHOTO_SLOTS.map(({key,label}) => {
+    const src = t.photos[key];
+    return src
+      ? `<div class="photo-slot"><img src="${src}" alt="${label} of specimen #${id} \u2014 ${t.name}" onclick="openCardLightbox(${id},'${key}')"><span class="plabel">${label}</span></div>`
+      : `<div class="photo-slot empty"><span class="plabel">${label}</span></div>`;
+  }).join('');
+  return `<div class="pc">
+    <div class="pc-head">
+      <div class="pc-num" style="background:${sc}">${id}</div>
+      <div class="pc-names"><h2>${t.name}</h2><p>${t.sci}</p></div>
+    </div>
+    <div class="pc-badges">
+      <span class="badge ${BCLS[t.status]}">${SSYM[t.status] || ''} ${t.status}</span>
+      <span class="genusbadge" style="background:${GBG[t.genus]||'#eee'};color:${GTX[t.genus]||'#555'}">${t.genus}</span>
+    </div>
+    <table class="dtbl">${rows}</table>
+    <div class="confbar">
+      <div class="conflbl">Confidence: ${pct}%</div>
+      <div class="conftrack"><div class="conffill" style="width:${pct}%;background:${sc}"></div></div>
+    </div>
+    <div class="photos">${photos}</div>
+    ${t.challenge ? `<div class="nbox">${t.challenge}</div>` : ''}
+    ${t.link ? `<a class="extlink" href="${t.link}" target="_blank">More information \u2192</a>` : ''}
+    ${t.addedViaMap ? `<div class="gps-note">GPS: ${t.lat.toFixed(6)}, ${t.lng.toFixed(6)}</div>` : ''}
+  </div>`;
+}
+
+function rebuildPrintGrid() {
+  const q             = (document.getElementById('lvsearch').value || '').toLowerCase().trim();
+  const statusChecked = [...document.querySelectorAll('.lvstatus:checked')].map(el => el.value);
+  const genusChecked  = [...document.querySelectorAll('.lvgenus:checked')].map(el => el.value);
+  const specChecked   = [...document.querySelectorAll('.lvspecies:checked')].map(el => el.value);
+  const filtered = Object.entries(T).filter(([id, t]) => {
+    if (statusChecked.length && !statusChecked.includes(t.status)) return false;
+    if (genusChecked.length  && !genusChecked.includes(t.genus))   return false;
+    if (specChecked.length   && !specChecked.includes(t.species))  return false;
+    if (q && !`${id} ${t.name} ${t.genus} ${t.species} ${t.sci}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  document.getElementById('pt-grid').innerHTML = filtered.map(([id]) => buildPrintCard(id)).join('');
+  updateLvDdBtns();
+}
+
+function toggleLvDd(id) {
+  const panel = document.getElementById(id);
+  const wasOpen = panel.classList.contains('open');
+  document.querySelectorAll('.lv-dd-panel').forEach(p => p.classList.remove('open'));
+  if (!wasOpen) panel.classList.add('open');
+}
+
+function updateLvDdBtns() {
+  [['status','Status'],['genus','Genus'],['species','Species']].forEach(([cat, label]) => {
+    const all = [...document.querySelectorAll(`.lv${cat}`)];
+    const sel = all.filter(el => el.checked);
+    const btn = document.getElementById(`lvdd-${cat}-btn`);
+    if (!btn) return;
+    const filtered = sel.length && sel.length < all.length;
+    btn.textContent = filtered ? `${label} (${sel.length}) ▾` : `${label} ▾`;
+    btn.classList.toggle('active', filtered);
+  });
+}
+
+function openPrint() {
+  document.getElementById('pt-date').textContent =
+    'Generated ' + new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+  const genera  = [...new Set(Object.values(T).map(t => t.genus).filter(Boolean))].sort();
+  const species = [...new Set(Object.values(T).map(t => t.species).filter(Boolean))].sort();
+  document.getElementById('lvdd-genus').innerHTML =
+    genera.map(g => `<label><input type="checkbox" class="lvgenus" value="${g}" onchange="rebuildPrintGrid()"> ${g}</label>`).join('');
+  document.getElementById('lvdd-species').innerHTML =
+    species.map(s => `<label><input type="checkbox" class="lvspecies" value="${s}" onchange="rebuildPrintGrid()"> ${s}</label>`).join('');
+  rebuildPrintGrid();
+  document.querySelector('.wrap').style.display = 'none';
+  document.getElementById('printview').style.display = 'block';
+  document.body.classList.add('lv-open');
+}
+
+function closePrint() {
+  document.getElementById('printview').style.display = 'none';
+  document.querySelector('.wrap').style.display = 'flex';
+  document.body.classList.remove('lv-open');
+}
+
+// ── PHOTO SLOTS & LIGHTBOX NAV ───────────────────────────────────────────────
+const PHOTO_SLOTS = [
+  {key:'foliage', label:'Foliage'},
+  {key:'form',    label:'Form'},
+  {key:'cone',    label:'Cone / Bark'}
+];
+let lbPhotos = []; // [{src, caption}] for current tree
+let lbIdx    = 0;
+
+function lbOpen(idx) {
+  lbIdx = idx;
+  lbShow();
+  document.getElementById('lightbox').style.display = 'flex';
+}
+
+function lbShow() {
+  const p = lbPhotos[lbIdx];
+  document.getElementById('lb-img').src = p.src;
+  const count = lbPhotos.length > 1 ? `  ${lbIdx + 1} / ${lbPhotos.length}` : '';
+  document.getElementById('lb-caption').textContent = p.caption + count;
+  const showNav = lbPhotos.length > 1;
+  document.getElementById('lb-prev').style.display = showNav ? '' : 'none';
+  document.getElementById('lb-next').style.display = showNav ? '' : 'none';
+}
+
+function lbNav(dir) {
+  lbIdx = (lbIdx + dir + lbPhotos.length) % lbPhotos.length;
+  lbShow();
+}
+
+function toggleMorePhotos() {
+  const grid = document.getElementById('pmorePhotos');
+  const btn  = document.getElementById('pmorebtn');
+  const showing = grid.style.display !== 'none';
+  grid.style.display = showing ? 'none' : '';
+  const count = (T[currentId]?.photos?.extra || []).length;
+  btn.textContent = showing ? `+ More photos (${count})` : `− Hide extra photos`;
+}
+
+// Used by print view cards — opens the full navigable lightbox for a specimen
+function openCardLightbox(id, key) {
+  const t = T[id];
+  lbPhotos = PHOTO_SLOTS
+    .filter(s => t.photos[s.key])
+    .map(s => ({src: t.photos[s.key], caption: `#${id} ${t.name} — ${s.label}`}));
+  const extras = (t.photos && t.photos.extra) ? t.photos.extra : [];
+  extras.forEach(e => lbPhotos.push({src: e.src, caption: `#${id} ${t.name} — ${e.label || 'Photo'}`}));
+  const idx = lbPhotos.findIndex(p => p.src === t.photos[key]);
+  lbOpen(Math.max(0, idx));
+}
+
+// Kept for any legacy callers
+function openLightbox(src, caption) {
+  lbPhotos = [{src, caption}];
+  lbOpen(0);
+}
+
+// ── CLICK-TO-ADD ─────────────────────────────────────────────────────────────
+let addMode = false;
+let pendingMarker = null;
+let pendingLatLng = null;
+
+function getNextId() {
+  return Math.max(...Object.keys(T).map(Number)) + 1;
+}
+
+function updateSpecimenCount() {
+  document.getElementById('speccount').textContent = Object.keys(T).length;
+  const hasAdded = Object.values(T).some(t => t.addedViaMap);
+  document.getElementById('exportbtn').style.display = hasAdded ? '' : 'none';
+}
+
+function toggleAddMode() {
+  addMode = !addMode;
+  const btn = document.getElementById('addbtn');
+  const banner = document.getElementById('addbanner');
+  if (addMode) {
+    btn.classList.add('active');
+    btn.textContent = 'Cancel';
+    banner.style.display = 'block';
+    map.getContainer().style.cursor = 'crosshair';
+  } else {
+    exitAddMode();
+  }
+}
+
+function exitAddMode() {
+  addMode = false;
+  const btn = document.getElementById('addbtn');
+  btn.classList.remove('active');
+  btn.textContent = 'Add Tree';
+  document.getElementById('addbanner').style.display = 'none';
+  map.getContainer().style.cursor = '';
+  if (pendingMarker) { map.removeLayer(pendingMarker); pendingMarker = null; }
+  pendingLatLng = null;
+  document.getElementById('addcard').style.display = 'none';
+}
+
+map.on('click', function(e) {
+  if (!addMode) return;
+  if (pendingMarker) map.removeLayer(pendingMarker);
+  pendingLatLng = e.latlng;
+  pendingMarker = L.circleMarker(e.latlng, {
+    radius: 10, color: '#BA7517', fillColor: '#BA7517',
+    fillOpacity: 0.4, weight: 2, dashArray: '5,4'
+  }).addTo(map);
+  document.getElementById('addcard').style.display = 'block';
+  document.getElementById('add-name').focus();
+});
+
+function confirmAdd() {
+  if (!pendingLatLng) return;
+  const name  = document.getElementById('add-name').value.trim() || 'Unknown Conifer';
+  const notes = document.getElementById('add-notes').value.trim() || null;
+  const newId = getNextId();
+  const now   = new Date().toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+
+  T[newId] = {
+    name, sci:'Unknown', genus:'Unknown', species:'Unknown',
+    fam:'Unknown', status:'Unknown', conf:null,
+    cone:null, form:null, bark:null, notes, alt:null, link:null,
+    challenge:'Identify this specimen. Record foliage type, cone details, bark, and form. Add full details to the Excel file.',
+    photos:{foliage:null, form:null, cone:null},
+    lat:pendingLatLng.lat, lng:pendingLatLng.lng,
+    addedViaMap:true, addedDate:now
+  };
+  treeIds.push(newId);
+  treeIds.sort((a,b) => a-b);
+
+  if (pendingMarker) { map.removeLayer(pendingMarker); pendingMarker = null; }
+
+  const m = L.marker([T[newId].lat, T[newId].lng], {icon: makeIcon(newId, 'Unknown', 'Unknown', false)})
+    .addTo(clusterGroup)
+    .bindTooltip(`<strong>#${newId} ${name}</strong><br><em>Added ${now} — update Excel</em>`,
+      {direction:'right', offset:[10,0], opacity:0.95});
+  m.on('click', () => showPanel(newId, m));
+  markers[newId] = m;
+
+  recomputeStats();
+  updateSpecimenCount();
+  saveAddedTrees();
+
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-notes').value = '';
+  exitAddMode();
+  showPanel(newId, m);
+}
+
+function cancelAdd() { exitAddMode(); }
+
+function exportAddedCSV() {
+  const added = Object.entries(T).filter(([, t]) => t.addedViaMap);
+  if (!added.length) { alert('No trees have been added via the map yet.'); return; }
+  const esc = v => `"${(v ?? '').toString().replace(/"/g, '""')}"`;
+  const header = ['Date added','ID','Provisional name','Latitude','Longitude','Notes','Transferred'];
+  const rows = added.map(([id, t]) => [
+    esc(t.addedDate), esc(id), esc(t.name),
+    esc(t.lat), esc(t.lng), esc(t.notes ?? ''), esc('')
+  ]);
+  const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `conifer_added_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function removeAddedTree(id) {
+  if (!T[id] || !T[id].addedViaMap) return;
+  if (!confirm(`Remove marker #${id} "${T[id].name}"? This cannot be undone.`)) return;
+
+  if (markers[id]) { clusterGroup.removeLayer(markers[id]); delete markers[id]; }
+  delete T[id];
+  treeIds.splice(treeIds.indexOf(id), 1);
+
+  recomputeStats();
+
+  currentId = null;
+  selectedMarker = null;
+  document.getElementById('pphotos').style.display = 'none';
+  document.getElementById('pbody').style.display = 'none';
+  document.getElementById('pnav').style.display = 'none';
+  document.getElementById('pname').textContent = 'Select a tree';
+  const sciEl = document.getElementById('psci');
+  sciEl.textContent = ''; sciEl.classList.add('placeholder');
+
+  saveAddedTrees();
+  updateSpecimenCount();
+}
+
+function saveAddedTrees() {
+  const added = Object.entries(T)
+    .filter(([, t]) => t.addedViaMap)
+    .map(([id, t]) => ({id: parseInt(id), ...t}));
+  localStorage.setItem('conifers_added', JSON.stringify(added));
+}
+
+function loadAddedTrees() {
+  let stored;
+  try { stored = JSON.parse(localStorage.getItem('conifers_added')); } catch(e) { return; }
+  if (!stored || !stored.length) return;
+  stored.forEach(tree => {
+    const id = tree.id;
+    if (T[id]) return; // already loaded from sync — sheet data takes priority
+    T[id] = tree;
+    if (!treeIds.includes(id)) treeIds.push(id);
+    const m = L.marker([tree.lat, tree.lng], {icon: makeIcon(id, 'Unknown', 'Unknown', false)})
+      .addTo(clusterGroup)
+      .bindTooltip(`<strong>#${id} ${tree.name}</strong><br><em>Added ${tree.addedDate} — update Excel</em>`,
+        {direction:'right', offset:[10,0], opacity:0.95});
+    m.on('click', () => showPanel(id, m));
+    markers[id] = m;
+  });
+  treeIds.sort((a,b) => a-b);
+  recomputeStats();
+  updateSpecimenCount();
+}
+
+loadAddedTrees();
+
+Object.values(T).forEach(t => {
+  if (!t.firstRecorded) {
+    t.firstRecorded = (t.addedViaMap && t.addedDate)
+      ? t.addedDate
+      : (t.notes || t.foliage || t.bark || t.form || t.challenge)
+        ? '2025-11-01'
+        : null;
+  }
+  if (!t.lastObserved) {
+    t.lastObserved = t.firstRecorded;
+  }
+});
+
+// ── FILTER SIDEBAR ────────────────────────────────────────────────────────────
+function buildFilterSidebar() {
+  const families = [...new Set(Object.values(T).map(t => t.fam).filter(Boolean))].sort();
+  const genera   = [...new Set(Object.values(T).map(t => t.genus).filter(Boolean))].sort();
+  document.getElementById('fsb-fam').innerHTML =
+    `<div class="fsb-lbl">Family</div>` +
+    families.map(f => `<label class="fsb-item"><input type="checkbox" class="ffam" value="${f}" onchange="applyFilters()"> ${f}</label>`).join('');
+  document.getElementById('fsb-genus').innerHTML =
+    `<div class="fsb-lbl">Genus</div>` +
+    genera.map(g => `<label class="fsb-item"><input type="checkbox" class="fgenus" value="${g}" onchange="applyFilters()"> ${g}</label>`).join('');
+}
+
+function getFilteredIds() {
+  const q            = (document.getElementById('fsearch').value || '').toLowerCase().trim();
+  const famChecked   = [...document.querySelectorAll('.ffam:checked')].map(el => el.value);
+  const genusChecked = [...document.querySelectorAll('.fgenus:checked')].map(el => el.value);
+  const confChecked  = [...document.querySelectorAll('.fconf:checked')].map(el => el.value);
+  return Object.entries(T)
+    .filter(([id, t]) => {
+      if (q && !`${id} ${t.name} ${t.genus} ${t.species} ${t.sci}`.toLowerCase().includes(q)) return false;
+      if (famChecked.length && !famChecked.includes(t.fam)) return false;
+      if (genusChecked.length && !genusChecked.includes(t.genus)) return false;
+      if (confChecked.length) {
+        const c = t.conf ?? 0;
+        if (!confChecked.some(b => b==='low'?c<0.4 : b==='med'?(c>=0.4&&c<0.7) : c>=0.7)) return false;
+      }
+      return true;
+    })
+    .map(([id]) => id);
+}
+
+function applyFilters() {
+  const visible = new Set(getFilteredIds().map(String));
+  Object.entries(markers).forEach(([id, m]) => m.setOpacity(visible.has(String(id)) ? 1 : 0.15));
+  const total = Object.keys(T).length;
+  document.getElementById('fcount').textContent = visible.size < total ? `${visible.size} of ${total} shown` : '';
+}
+
+function clearFilters() {
+  document.getElementById('fsearch').value = '';
+  document.querySelectorAll('.ffam,.fgenus,.fconf').forEach(el => { el.checked = false; });
+  applyFilters();
+  const sb = document.querySelector('.filter-sidebar');
+  const bd = document.getElementById('filter-backdrop');
+  if (sb.classList.contains('mobile-open')) {
+    sb.classList.remove('mobile-open');
+    bd.classList.remove('open');
+  }
+}
+
+function toggleMobileFilter() {
+  document.querySelector('.filter-sidebar').classList.toggle('mobile-open');
+  document.getElementById('filter-backdrop').classList.toggle('open');
+}
+
+buildFilterSidebar();
+
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+  document.getElementById('lb-img').src = '';
+}
+document.getElementById('lb-bg').addEventListener('click', closeLightbox);
+document.getElementById('lb-close').addEventListener('click', closeLightbox);
+document.getElementById('lb-prev').addEventListener('click', () => lbNav(-1));
+document.getElementById('lb-next').addEventListener('click', () => lbNav(1));
+document.addEventListener('keydown', e => {
+  if (document.getElementById('lightbox').style.display !== 'flex') return;
+  if (e.key === 'Escape')     closeLightbox();
+  if (e.key === 'ArrowLeft')  lbNav(-1);
+  if (e.key === 'ArrowRight') lbNav(1);
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.lv-dropdown'))
+    document.querySelectorAll('.lv-dd-panel').forEach(p => p.classList.remove('open'));
+});
+</script>
+
+</body>
+</html>
