@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="conifer-map-version" content="0.6">
-<meta name="conifer-map-edited" content="2026-06-01">
+<meta name="conifer-map-edited" content="2026-06-02">
 <title>Bermuda Botanical Gardens — Interactive Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -290,7 +290,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
         <div class="stat"><div class="snum" style="color:#BA7517" id="st-pal">0</div><div class="slbl">tentative</div></div>
         <div class="stat"><div class="snum" style="color:#888780" id="su-pal">0</div><div class="slbl">unknown</div></div>
       </div>
-      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-06-01</div>
+      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-06-02</div>
     </div>
   </div>
 </div>
@@ -3404,23 +3404,32 @@ const POIS = [
   {
     lat: 32.293539, lng: -64.761640,
     name: 'The Botanist Café & Garden Lounge',
+    url: 'https://botanist.cafe/',
     img: 'https://raw.githubusercontent.com/mjacoleman91/bbs-logos/main/The%20Botanist.png'
   },
   {
     lat: 32.293654, lng: -64.761741,
     name: 'Masterworks Museum of Bermuda',
+    url: 'https://www.masterworksbermuda.org',
     img: 'https://raw.githubusercontent.com/mjacoleman91/bbs-logos/main/Masterworks%20Museum%20Bermuda.png'
   }
 ];
 POIS.forEach(poi => {
   const icon = L.divIcon({
-    html: `<img src="${poi.img}" style="width:70px;height:70px;object-fit:contain;border-radius:8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))" alt="">`,
+    html: `<img src="${poi.img}" style="width:70px;height:70px;object-fit:contain;border-radius:8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35));cursor:pointer" alt="">`,
     className: '',
     iconSize: [70, 70],
     iconAnchor: [35, 35]
   });
+  const popup = L.popup({maxWidth: 200, offset: [0, -30]}).setContent(
+    `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:13px;line-height:1.5">
+      <strong>${poi.name}</strong><br>
+      <a href="${poi.url}" target="_blank" rel="noopener" style="color:#185FA5;font-size:12px;text-decoration:none">Visit website ↗</a>
+    </div>`
+  );
   L.marker([poi.lat, poi.lng], {icon})
     .bindTooltip(poi.name, {direction:'top', offset:[0,-24]})
+    .bindPopup(popup)
     .addTo(map);
 });
 
