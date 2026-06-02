@@ -3847,9 +3847,10 @@ function openPrint() {
   const collDdWrap  = document.getElementById('lvcoll-dd-wrap');
   const mapCollChecked = [...document.querySelectorAll('.fcoll:checked')].map(el => el.value);
   if (collections.length > 1) {
-    collDdWrap.style.display = '';
     document.getElementById('lvdd-coll').innerHTML =
       collections.map(c => `<label><input type="checkbox" class="lvcoll" value="${c}" onchange="rebuildLvTaxons();rebuildPrintGrid()"${mapCollChecked.includes(c) ? ' checked' : ''}> ${c} Collection</label>`).join('');
+    // Hide collection switcher on website embed — collection is locked via URL param
+    collDdWrap.style.display = _activeCollection() ? 'none' : '';
   } else {
     collDdWrap.style.display = 'none';
   }
@@ -4275,8 +4276,9 @@ function applyURLParam() {
   document.getElementById('maplbl-title').textContent = `${collLabel} — Bermuda Botanical Gardens`;
   updateSpecimenCount();
 
-  // Hide Add Tree on website embed (URL param = public-facing page)
+  // Hide Add Tree and Collection filter on website embed (URL param = public-facing page)
   document.getElementById('addbtn').style.display = 'none';
+  document.getElementById('fsb-collection').style.display = 'none';
 
   // Show only the active collection in Survey Progress
   const progMap = { Conifer: 'prog-conifer', Rose: 'prog-rose', Palm: 'prog-palm' };
