@@ -27,6 +27,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f5f7f3;color:#1a
 .tname{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:2px}
 .tsci{font-size:13px;font-style:italic;color:#666;margin-bottom:8px}
 .tsci.placeholder{color:#aaa;font-style:normal}
+.tname.placeholder{font-size:12px;font-weight:400;color:#bbb}
 svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;border-radius:50%}
 .badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-right:4px}
 .bt{background:#FAEEDA;color:#633806}
@@ -224,7 +225,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
     </div>
     <div class="card">
       <p class="clbl">Selected specimen</p>
-      <p class="tname" id="pname">Click a marker</p>
+      <p class="tname placeholder" id="pname">Click a marker</p>
       <p class="tsci placeholder" id="psci">Hover over any marker to preview, click for full details</p>
       <div class="photos" id="pphotos" style="display:none"></div>
       <button id="pmorebtn" class="more-photos-btn" style="display:none" onclick="toggleMorePhotos()"></button>
@@ -272,23 +273,29 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
     </div>
     <div class="card">
       <p class="clbl">Survey progress</p>
-      <div style="font-size:10px;font-weight:600;color:#0B6E5A;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Conifer Collection</div>
-      <div class="stats">
-        <div class="stat"><div class="snum" style="color:#1D9E75" id="sc-con">0</div><div class="slbl">confirmed</div></div>
-        <div class="stat"><div class="snum" style="color:#BA7517" id="st-con">0</div><div class="slbl">tentative</div></div>
-        <div class="stat"><div class="snum" style="color:#888780" id="su-con">0</div><div class="slbl">unknown</div></div>
+      <div id="prog-conifer">
+        <div style="font-size:10px;font-weight:600;color:#0B6E5A;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Conifer Collection</div>
+        <div class="stats">
+          <div class="stat"><div class="snum" style="color:#1D9E75" id="sc-con">0</div><div class="slbl">confirmed</div></div>
+          <div class="stat"><div class="snum" style="color:#BA7517" id="st-con">0</div><div class="slbl">tentative</div></div>
+          <div class="stat"><div class="snum" style="color:#888780" id="su-con">0</div><div class="slbl">unknown</div></div>
+        </div>
       </div>
-      <div style="font-size:10px;font-weight:600;color:#C04070;text-transform:uppercase;letter-spacing:.05em;margin-top:8px;margin-bottom:3px">Rose Collection</div>
-      <div class="stats">
-        <div class="stat"><div class="snum" style="color:#1D9E75" id="sc-ros">0</div><div class="slbl">confirmed</div></div>
-        <div class="stat"><div class="snum" style="color:#BA7517" id="st-ros">0</div><div class="slbl">tentative</div></div>
-        <div class="stat"><div class="snum" style="color:#888780" id="su-ros">0</div><div class="slbl">unknown</div></div>
+      <div id="prog-rose">
+        <div style="font-size:10px;font-weight:600;color:#C04070;text-transform:uppercase;letter-spacing:.05em;margin-top:8px;margin-bottom:3px">Rose Collection</div>
+        <div class="stats">
+          <div class="stat"><div class="snum" style="color:#1D9E75" id="sc-ros">0</div><div class="slbl">confirmed</div></div>
+          <div class="stat"><div class="snum" style="color:#BA7517" id="st-ros">0</div><div class="slbl">tentative</div></div>
+          <div class="stat"><div class="snum" style="color:#888780" id="su-ros">0</div><div class="slbl">unknown</div></div>
+        </div>
       </div>
-      <div style="font-size:10px;font-weight:600;color:#C89020;text-transform:uppercase;letter-spacing:.05em;margin-top:8px;margin-bottom:3px">Palm Collection</div>
-      <div class="stats">
-        <div class="stat"><div class="snum" style="color:#1D9E75" id="sc-pal">0</div><div class="slbl">confirmed</div></div>
-        <div class="stat"><div class="snum" style="color:#BA7517" id="st-pal">0</div><div class="slbl">tentative</div></div>
-        <div class="stat"><div class="snum" style="color:#888780" id="su-pal">0</div><div class="slbl">unknown</div></div>
+      <div id="prog-palm">
+        <div style="font-size:10px;font-weight:600;color:#C89020;text-transform:uppercase;letter-spacing:.05em;margin-top:8px;margin-bottom:3px">Palm Collection</div>
+        <div class="stats">
+          <div class="stat"><div class="snum" style="color:#1D9E75" id="sc-pal">0</div><div class="slbl">confirmed</div></div>
+          <div class="stat"><div class="snum" style="color:#BA7517" id="st-pal">0</div><div class="slbl">tentative</div></div>
+          <div class="stat"><div class="snum" style="color:#888780" id="su-pal">0</div><div class="slbl">unknown</div></div>
+        </div>
       </div>
       <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-06-02</div>
     </div>
@@ -3530,7 +3537,9 @@ function showPanel(id, marker) {
   marker.setIcon(makeIcon(id, t.genus, t.status, true));
   selectedMarker = marker;
 
-  document.getElementById('pname').textContent = `#${dispId(id)} \u2014 ${t.name}`;
+  const pname = document.getElementById('pname');
+  pname.textContent = `#${dispId(id)} \u2014 ${t.name}`;
+  pname.classList.remove('placeholder');
   const sci = document.getElementById('psci');
   sci.textContent = t.sci; sci.classList.remove('placeholder');
 
@@ -4050,7 +4059,8 @@ function removeAddedTree(id) {
   document.getElementById('pphotos').style.display = 'none';
   document.getElementById('pbody').style.display = 'none';
   document.getElementById('pnav').style.display = 'none';
-  document.getElementById('pname').textContent = 'Select a tree';
+  const pnameEl = document.getElementById('pname');
+  pnameEl.textContent = 'Click a marker'; pnameEl.classList.add('placeholder');
   const sciEl = document.getElementById('psci');
   sciEl.textContent = ''; sciEl.classList.add('placeholder');
 
@@ -4103,9 +4113,9 @@ Object.values(T).forEach(t => {
 
 // ── COLLECTION VIEWS ─────────────────────────────────────────────────────────
 const COLLECTION_VIEWS = {
-  Conifer: { lat: 32.293556, lng: -64.762834, zoom: 19 },
+  Conifer: { lat: 32.293556, lng: -64.762834, zoom: 20 },
   Rose:    { lat: 32.293379, lng: -64.761635, zoom: 20 },
-  Palm:    { lat: 32.291695, lng: -64.764419, zoom: 19 }
+  Palm:    { lat: 32.291695, lng: -64.764419, zoom: 20 }
 };
 // Overview centres all three gardens; zoom 17 fits conifer+rose (N) and palm (S, ~200m apart)
 const MAP_OVERVIEW = { lat: 32.292600, lng: -64.763200, zoom: 17 };
@@ -4208,7 +4218,10 @@ function getFilteredIds() {
 function applyFilters() {
   const visible = new Set(getFilteredIds().map(String));
   Object.entries(markers).forEach(([id, m]) => m.setOpacity(visible.has(String(id)) ? 1 : 0.15));
-  const total = Object.keys(T).length;
+  const collChecked = [...document.querySelectorAll('.fcoll:checked')].map(el => el.value);
+  const total = collChecked.length === 1
+    ? Object.values(T).filter(t => t.collection === collChecked[0]).length
+    : Object.keys(T).length;
   document.getElementById('fcount').textContent = visible.size < total ? `${visible.size} of ${total} shown` : '';
 }
 
@@ -4261,6 +4274,16 @@ function applyURLParam() {
   document.title = `${collLabel} — Bermuda Botanical Gardens`;
   document.getElementById('maplbl-title').textContent = `${collLabel} — Bermuda Botanical Gardens`;
   updateSpecimenCount();
+
+  // Hide Add Tree on website embed (URL param = public-facing page)
+  document.getElementById('addbtn').style.display = 'none';
+
+  // Show only the active collection in Survey Progress
+  const progMap = { Conifer: 'prog-conifer', Rose: 'prog-rose', Palm: 'prog-palm' };
+  Object.entries(progMap).forEach(([col, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = col === key ? '' : 'none';
+  });
 }
 
 applyURLParam();
