@@ -4321,15 +4321,34 @@ function applyURLParam() {
 
 applyURLParam();
 
-// Re-invalidate after layout settles (fixes off-centre and grey tiles in iframes on mobile)
-setTimeout(() => {
+// Fix grey tiles and off-centre view in Squarespace iframes.
+// Squarespace sets iframe dimensions asynchronously — the container can be the wrong
+// width for several seconds. We fire invalidateSize at multiple intervals as a fallback,
+// and use ResizeObserver as the primary trigger so it reacts to the actual resize event.
+function _fixMapSize() {
   map.invalidateSize(false);
   const key = _activeCollection();
   if (key && COLLECTION_VIEWS[key]) {
     const v = COLLECTION_VIEWS[key];
     map.setView([v.lat, v.lng], v.zoom);
   }
-}, 300);
+}
+[100, 400, 900, 1800].forEach(d => setTimeout(_fixMapSize, d));
+if (typeof ResizeObserver !== 'undefined') {
+  const _loadTime = Date.now();
+  const ro = new ResizeObserver(() => {
+    map.invalidateSize(false);
+    // Only re-centre within the first 3 seconds — after that the user may have panned
+    if (Date.now() - _loadTime < 3000) {
+      const key = _activeCollection();
+      if (key && COLLECTION_VIEWS[key]) {
+        const v = COLLECTION_VIEWS[key];
+        map.setView([v.lat, v.lng], v.zoom);
+      }
+    }
+  });
+  ro.observe(document.getElementById('map'));
+}
 
 function closeLightbox() {
   document.getElementById('lightbox').style.display = 'none';
