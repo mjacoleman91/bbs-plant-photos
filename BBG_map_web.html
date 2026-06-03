@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="conifer-map-version" content="0.6">
-<meta name="conifer-map-edited" content="2026-06-02">
+<meta name="conifer-map-edited" content="2026-06-03">
 <title>Bermuda Botanical Gardens — Interactive Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -141,7 +141,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
   body{padding:0}
   .wrap{flex-direction:column;gap:0;height:100vh;overflow:hidden;position:relative}
   .mapcol{flex-shrink:0;padding:8px 8px 0}
-  #map{height:40vh;min-height:200px;border-radius:6px}
+  #map{height:48vh;min-height:200px;border-radius:6px}
   .leg{gap:5px;margin-top:6px;padding-bottom:4px}
   .side{width:100%;flex-shrink:unset;flex:1;min-height:0;overflow-y:auto;padding:8px}
   .photos{grid-template-columns:1fr 1fr 1fr}
@@ -179,7 +179,8 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
     <div class="fsb-section" id="fsb-collection"></div>
     <div class="fsb-section" id="fsb-fam"></div>
     <div class="fsb-section" id="fsb-genus"></div>
-    <div class="fsb-section">
+    <div class="fsb-section" id="fsb-class"></div>
+    <div class="fsb-section" id="fsb-conf">
       <div class="fsb-lbl">Confidence</div>
       <label class="fsb-item"><input type="checkbox" class="fconf" value="low" onchange="applyFilters()"> Low (0–40%)</label>
       <label class="fsb-item"><input type="checkbox" class="fconf" value="med" onchange="applyFilters()"> Medium (40–70%)</label>
@@ -297,7 +298,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
           <div class="stat"><div class="snum" style="color:#888780" id="su-pal">0</div><div class="slbl">unknown</div></div>
         </div>
       </div>
-      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-06-02</div>
+      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-06-03</div>
     </div>
   </div>
 </div>
@@ -4134,25 +4135,42 @@ function flyToActiveCollection() {
 // ── FILTER SIDEBAR ────────────────────────────────────────────────────────────
 function rebuildTaxonFilters() {
   const collChecked = [...document.querySelectorAll('.fcoll:checked')].map(el => el.value);
-  // Family and Genus are only useful once a collection is selected.
-  // At overview zoom with all collections visible, filtering by genus highlights nothing.
   if (!collChecked.length) {
     document.getElementById('fsb-fam').innerHTML = '';
     document.getElementById('fsb-genus').innerHTML = '';
+    document.getElementById('fsb-class').innerHTML = '';
+    document.getElementById('fsb-conf').style.display = '';
     rebuildLegend();
     return;
   }
   const src = Object.values(T).filter(t => collChecked.includes(t.collection));
   const families = [...new Set(src.map(t => t.fam).filter(Boolean))].sort();
   const genera   = [...new Set(src.map(t => t.genus).filter(Boolean))].sort();
-  const famChecked = [...document.querySelectorAll('.ffam:checked')].map(el => el.value);
-  const genChecked = [...document.querySelectorAll('.fgenus:checked')].map(el => el.value);
-  document.getElementById('fsb-fam').innerHTML =
-    `<div class="fsb-lbl">Family</div>` +
-    families.map(f => `<label class="fsb-item"><input type="checkbox" class="ffam" value="${f}" onchange="applyFilters()"${famChecked.includes(f)?' checked':''}> ${f}</label>`).join('');
-  document.getElementById('fsb-genus').innerHTML =
-    `<div class="fsb-lbl">Genus</div>` +
-    genera.map(g => `<label class="fsb-item"><input type="checkbox" class="fgenus" value="${g}" onchange="applyFilters()"${genChecked.includes(g)?' checked':''}> ${g}</label>`).join('');
+  const famChecked  = [...document.querySelectorAll('.ffam:checked')].map(el => el.value);
+  const genChecked  = [...document.querySelectorAll('.fgenus:checked')].map(el => el.value);
+
+  // Only show Family/Genus when they have more than one option to choose from
+  document.getElementById('fsb-fam').innerHTML = families.length > 1
+    ? `<div class="fsb-lbl">Family</div>` +
+      families.map(f => `<label class="fsb-item"><input type="checkbox" class="ffam" value="${f}" onchange="applyFilters()"${famChecked.includes(f)?' checked':''}> ${f}</label>`).join('')
+    : '';
+  document.getElementById('fsb-genus').innerHTML = genera.length > 1
+    ? `<div class="fsb-lbl">Genus</div>` +
+      genera.map(g => `<label class="fsb-item"><input type="checkbox" class="fgenus" value="${g}" onchange="applyFilters()"${genChecked.includes(g)?' checked':''}> ${g}</label>`).join('')
+    : '';
+
+  // Classification filter — roses only (t.species holds the class value for roses)
+  const roseOnly = collChecked.length === 1 && collChecked[0] === 'Rose';
+  const classChecked = [...document.querySelectorAll('.fclass:checked')].map(el => el.value);
+  document.getElementById('fsb-class').innerHTML = roseOnly
+    ? `<div class="fsb-lbl">Classification</div>` +
+      [...new Set(src.map(t => t.species).filter(Boolean))].sort()
+        .map(c => `<label class="fsb-item"><input type="checkbox" class="fclass" value="${c}" onchange="applyFilters()"${classChecked.includes(c)?' checked':''}> ${c}</label>`).join('')
+    : '';
+
+  // Hide Confidence for roses (all have conf:null — filter would do nothing)
+  document.getElementById('fsb-conf').style.display = roseOnly ? 'none' : '';
+
   rebuildLegend();
 }
 
@@ -4200,6 +4218,7 @@ function getFilteredIds() {
   const collChecked  = [...document.querySelectorAll('.fcoll:checked')].map(el => el.value);
   const famChecked   = [...document.querySelectorAll('.ffam:checked')].map(el => el.value);
   const genusChecked = [...document.querySelectorAll('.fgenus:checked')].map(el => el.value);
+  const classChecked = [...document.querySelectorAll('.fclass:checked')].map(el => el.value);
   const confChecked  = [...document.querySelectorAll('.fconf:checked')].map(el => el.value);
   return Object.entries(T)
     .filter(([id, t]) => {
@@ -4207,6 +4226,7 @@ function getFilteredIds() {
       if (collChecked.length && !collChecked.includes(t.collection)) return false;
       if (famChecked.length && !famChecked.includes(t.fam)) return false;
       if (genusChecked.length && !genusChecked.includes(t.genus)) return false;
+      if (classChecked.length && !classChecked.includes(t.species)) return false;
       if (confChecked.length) {
         const c = t.conf ?? 0;
         if (!confChecked.some(b => b==='low'?c<0.4 : b==='med'?(c>=0.4&&c<0.7) : c>=0.7)) return false;
@@ -4228,7 +4248,7 @@ function applyFilters() {
 
 function clearFilters() {
   document.getElementById('fsearch').value = '';
-  document.querySelectorAll('.fcoll,.ffam,.fgenus,.fconf').forEach(el => { el.checked = false; });
+  document.querySelectorAll('.fcoll,.ffam,.fgenus,.fclass,.fconf').forEach(el => { el.checked = false; });
   rebuildTaxonFilters();
   applyFilters();
   const sb = document.querySelector('.filter-sidebar');
