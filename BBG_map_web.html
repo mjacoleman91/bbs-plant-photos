@@ -3436,7 +3436,7 @@ POIS.forEach(poi => {
     </div>`
   );
   L.marker([poi.lat, poi.lng], {icon})
-    .bindTooltip(poi.name, {direction:'top', offset:[0,-24]})
+    .bindTooltip(poi.name, {direction:'top', offset:[0,-24], sticky:false})
     .bindPopup(popup)
     .addTo(map);
 });
@@ -3867,6 +3867,14 @@ function closePrint() {
   document.getElementById('printview').style.display = 'none';
   document.querySelector('.wrap').style.display = 'flex';
   document.body.classList.remove('lv-open');
+  setTimeout(() => {
+    map.invalidateSize(false);
+    const key = _activeCollection();
+    if (key && COLLECTION_VIEWS[key]) {
+      const v = COLLECTION_VIEWS[key];
+      map.setView([v.lat, v.lng], v.zoom);
+    }
+  }, 50);
 }
 
 // ── PHOTO SLOTS & LIGHTBOX NAV ───────────────────────────────────────────────
@@ -4124,6 +4132,7 @@ const MAP_OVERVIEW = { lat: 32.292600, lng: -64.763200, zoom: 17 };
 
 function flyToActiveCollection() {
   const checked = [...document.querySelectorAll('.fcoll:checked')].map(el => el.value);
+  map.invalidateSize(false);
   if (checked.length === 1 && COLLECTION_VIEWS[checked[0]]) {
     const v = COLLECTION_VIEWS[checked[0]];
     map.flyTo([v.lat, v.lng], v.zoom, {duration: 1.2});
@@ -4256,12 +4265,14 @@ function clearFilters() {
   if (sb.classList.contains('mobile-open')) {
     sb.classList.remove('mobile-open');
     bd.classList.remove('open');
+    map.invalidateSize(false);
   }
 }
 
 function toggleMobileFilter() {
   document.querySelector('.filter-sidebar').classList.toggle('mobile-open');
   document.getElementById('filter-backdrop').classList.toggle('open');
+  map.invalidateSize(false);
 }
 
 buildFilterSidebar();
@@ -4309,6 +4320,16 @@ function applyURLParam() {
 }
 
 applyURLParam();
+
+// Re-invalidate after layout settles (fixes off-centre and grey tiles in iframes on mobile)
+setTimeout(() => {
+  map.invalidateSize(false);
+  const key = _activeCollection();
+  if (key && COLLECTION_VIEWS[key]) {
+    const v = COLLECTION_VIEWS[key];
+    map.setView([v.lat, v.lng], v.zoom);
+  }
+}, 300);
 
 function closeLightbox() {
   document.getElementById('lightbox').style.display = 'none';
