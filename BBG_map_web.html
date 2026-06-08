@@ -2594,7 +2594,7 @@ const T = {
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
     link:null, challenge:null,
-    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P1_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P1_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P1_Trunk.jpg", extra:[]},
     lat:32.291880, lng:-64.764666
@@ -2614,7 +2614,7 @@ const T = {
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
     link:null, challenge:null,
-    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P2_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P2_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P2_Trunk.jpg", extra:[]},
     lat:32.291891, lng:-64.764610
@@ -2634,7 +2634,7 @@ const T = {
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
     link:null, challenge:null,
-    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P3_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P3_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P3_Trunk.jpg", extra:[]},
     lat:32.291900, lng:-64.764552
@@ -2654,7 +2654,7 @@ const T = {
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
     link:null, challenge:null,
-    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P4_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P4_Form.jpg", cone:null, extra:[]},
     lat:32.291855, lng:-64.764566
@@ -2674,7 +2674,7 @@ const T = {
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
     link:null, challenge:null,
-    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P5_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P5_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P5_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P5_Crown.jpg"}]},
     lat:32.291902, lng:-64.764422
@@ -3860,9 +3860,10 @@ function showPanel(id, marker) {
 
   // Nav arrows
   currentId = id;
-  const idx = treeIds.indexOf(id);
-  const prevId = treeIds[(idx - 1 + treeIds.length) % treeIds.length];
-  const nextId = treeIds[(idx + 1) % treeIds.length];
+  const _navIds = navIds();
+  const idx = _navIds.indexOf(id);
+  const prevId = _navIds[(idx - 1 + _navIds.length) % _navIds.length];
+  const nextId = _navIds[(idx + 1) % _navIds.length];
   document.getElementById('prevbtn').textContent = `\u2190 #${dispId(prevId)} ${T[prevId].name}`;
   document.getElementById('nextbtn').textContent = `#${dispId(nextId)} ${T[nextId].name} \u2192`;
   document.getElementById('pnav').style.display = 'flex';
@@ -3873,10 +3874,16 @@ function showPanel(id, marker) {
   }
 }
 
+function navIds() {
+  const col = _activeCollection();
+  return col ? treeIds.filter(id => T[id].collection === col) : treeIds;
+}
+
 function navTree(dir) {
   if (currentId === null) return;
-  const idx = treeIds.indexOf(currentId);
-  const newId = treeIds[(idx + dir + treeIds.length) % treeIds.length];
+  const ids = navIds();
+  const idx = ids.indexOf(currentId);
+  const newId = ids[(idx + dir + ids.length) % ids.length];
   showPanel(newId, markers[newId]);
   const ll = L.latLng(T[newId].lat, T[newId].lng);
   if (!map.getBounds().contains(ll)) map.panTo(ll);
