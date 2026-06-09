@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="conifer-map-version" content="0.6">
-<meta name="conifer-map-edited" content="2026-06-08">
+<meta name="conifer-map-edited" content="2026-06-09">
 <title>Bermuda Botanical Gardens — Interactive Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -180,6 +180,9 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
     <div class="fsb-section" id="fsb-fam"></div>
     <div class="fsb-section" id="fsb-genus"></div>
     <div class="fsb-section" id="fsb-class"></div>
+    <div class="fsb-section" id="fsb-leaf-arch"></div>
+    <div class="fsb-section" id="fsb-endemic"></div>
+    <div class="fsb-section" id="fsb-conservation"></div>
     <div class="fsb-section" id="fsb-conf">
       <div class="fsb-lbl">Confidence</div>
       <label class="fsb-item"><input type="checkbox" class="fconf" value="low" onchange="applyFilters()"> Low (0–40%)</label>
@@ -249,6 +252,8 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
           <tr id="rfruit" style="display:none"><td>Fruit / Seed</td><td id="pfruit"></td></tr>
           <tr id="rtrunk" style="display:none"><td>Trunk</td><td id="ptrunk"></td></tr>
           <tr id="rcrown-habit" style="display:none"><td>Crown &amp; Habit</td><td id="pcrown-habit"></td></tr>
+          <tr id="rendemic" style="display:none"><td>Bermuda Endemic</td><td id="pendemic"></td></tr>
+          <tr id="rconservation" style="display:none"><td>Conservation Status</td><td id="pconservation"></td></tr>
           <tr id="rfoliage"><td>Foliage</td><td id="pfoliage"></td></tr>
           <tr id="rcone"><td>Cones</td><td id="pcone"></td></tr>
           <tr id="rform"><td>Form</td><td id="pform"></td></tr>
@@ -298,7 +303,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
           <div class="stat"><div class="snum" style="color:#888780" id="su-pal">0</div><div class="slbl">unknown</div></div>
         </div>
       </div>
-      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-06-08</div>
+      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-06-09</div>
     </div>
   </div>
 </div>
@@ -349,11 +354,11 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
 
 <script>
 const GBG={Juniperus:"#DAF0EC",Hesperocyparis:"#FAECE7",Chamaecyparis:"#EEEDFE",Platycladus:"#E6F1FB",Araucaria:"#FDF0E6",Ginkgo:"#FDFBE6",Cupressus:"#F5E8D8",Thuja:"#E2EFE2",Rosa:"#FCEEF4",
-           Sabal:"#FDF5E0",Phoenix:"#FDF5E0",Livistona:"#FDF5E0",Washingtonia:"#FDF5E0",Hyophorbe:"#FDF5E0",Latania:"#FDF5E0",Copernicia:"#FDF5E0",Roystonea:"#FDF5E0",Chamaerops:"#FDF5E0",Cocos:"#FDF5E0",Thrinax:"#FDF5E0",Pritchardia:"#FDF5E0",Dictyosperma:"#FDF5E0",Rhapis:"#FDF5E0",Butia:"#FDF5E0",Acoelorrhaphe:"#FDF5E0",Coccothrinax:"#FDF5E0",Adonidia:"#FDF5E0",Veitchia:"#FDF5E0",Gaussia:"#FDF5E0"};
+           Sabal:"#FDF5E0",Phoenix:"#FDF5E0",Livistona:"#FDF5E0",Saribus:"#FDF5E0",Washingtonia:"#FDF5E0",Hyophorbe:"#FDF5E0",Latania:"#FDF5E0",Copernicia:"#FDF5E0",Roystonea:"#FDF5E0",Chamaerops:"#FDF5E0",Cocos:"#FDF5E0",Thrinax:"#FDF5E0",Pritchardia:"#FDF5E0",Dictyosperma:"#FDF5E0",Rhapis:"#FDF5E0",Butia:"#FDF5E0",Acoelorrhaphe:"#FDF5E0",Coccothrinax:"#FDF5E0",Adonidia:"#FDF5E0",Veitchia:"#FDF5E0",Gaussia:"#FDF5E0"};
 const GTX={Juniperus:"#085041",Hesperocyparis:"#712B13",Chamaecyparis:"#3C3489",Platycladus:"#0C447C",Araucaria:"#6B3310",Ginkgo:"#5A4A00",Cupressus:"#6B4A1A",Thuja:"#2E5B2E",Rosa:"#7A2045",
-           Sabal:"#7A5500",Phoenix:"#7A5500",Livistona:"#7A5500",Washingtonia:"#7A5500",Hyophorbe:"#7A5500",Latania:"#7A5500",Copernicia:"#7A5500",Roystonea:"#7A5500",Chamaerops:"#7A5500",Cocos:"#7A5500",Thrinax:"#7A5500",Pritchardia:"#7A5500",Dictyosperma:"#7A5500",Rhapis:"#7A5500",Butia:"#7A5500",Acoelorrhaphe:"#7A5500",Coccothrinax:"#7A5500",Adonidia:"#7A5500",Veitchia:"#7A5500",Gaussia:"#7A5500"};
+           Sabal:"#7A5500",Phoenix:"#7A5500",Livistona:"#7A5500",Saribus:"#7A5500",Washingtonia:"#7A5500",Hyophorbe:"#7A5500",Latania:"#7A5500",Copernicia:"#7A5500",Roystonea:"#7A5500",Chamaerops:"#7A5500",Cocos:"#7A5500",Thrinax:"#7A5500",Pritchardia:"#7A5500",Dictyosperma:"#7A5500",Rhapis:"#7A5500",Butia:"#7A5500",Acoelorrhaphe:"#7A5500",Coccothrinax:"#7A5500",Adonidia:"#7A5500",Veitchia:"#7A5500",Gaussia:"#7A5500"};
 const GCOL={Juniperus:"#0B6E5A",Hesperocyparis:"#D85A30",Chamaecyparis:"#7F77DD",Platycladus:"#378ADD",Araucaria:"#C47030",Ginkgo:"#B8A800",Cupressus:"#A87832",Thuja:"#4E9858",Rosa:"#C04070",
-            Sabal:"#C89020",Phoenix:"#C89020",Livistona:"#C89020",Washingtonia:"#C89020",Hyophorbe:"#C89020",Latania:"#C89020",Copernicia:"#C89020",Roystonea:"#C89020",Chamaerops:"#C89020",Cocos:"#C89020",Thrinax:"#C89020",Pritchardia:"#C89020",Dictyosperma:"#C89020",Rhapis:"#C89020",Butia:"#C89020",Acoelorrhaphe:"#C89020",Coccothrinax:"#C89020",Adonidia:"#C89020",Veitchia:"#C89020",Gaussia:"#C89020"};
+            Sabal:"#C89020",Phoenix:"#C89020",Livistona:"#C89020",Saribus:"#C89020",Washingtonia:"#C89020",Hyophorbe:"#C89020",Latania:"#C89020",Copernicia:"#C89020",Roystonea:"#C89020",Chamaerops:"#C89020",Cocos:"#C89020",Thrinax:"#C89020",Pritchardia:"#C89020",Dictyosperma:"#C89020",Rhapis:"#C89020",Butia:"#C89020",Acoelorrhaphe:"#C89020",Coccothrinax:"#C89020",Adonidia:"#C89020",Veitchia:"#C89020",Gaussia:"#C89020"};
 const SCOLS={Confirmed:"#1D9E75",Tentative:"#BA7517",Unknown:"#888780"};
 const BCLS={Confirmed:"bc",Tentative:"bt",Unknown:"bu"};
 const SSYM={Confirmed:"●",Tentative:"▲",Unknown:"?"};
@@ -2593,9 +2598,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Copernicia_alba", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P1_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P1_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P1_Trunk.jpg", extra:[]},
     lat:32.291880, lng:-64.764666
   },
@@ -2613,9 +2619,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://palmpedia.net/wiki/Adonidia_merrillii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P2_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P2_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P2_Trunk.jpg", extra:[]},
     lat:32.291891, lng:-64.764610
   },
@@ -2633,9 +2640,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Gaussia_maya", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Vulnerable",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P3_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P3_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P3_Trunk.jpg", extra:[]},
     lat:32.291900, lng:-64.764552
   },
@@ -2653,9 +2661,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Chamaerops_humilis", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P4_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P4_Form.jpg", cone:null, extra:[]},
     lat:32.291855, lng:-64.764566
   },
@@ -2673,9 +2682,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Latania_loddigesii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 May 2026",
     photoDate:"May 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Endangered",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P5_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P5_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P5_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P5_Crown.jpg"}]},
     lat:32.291902, lng:-64.764422
   },
@@ -2693,9 +2703,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Washingtonia_robusta", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P6_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P6_Trunk.jpg", extra:[]},
     lat:32.291804, lng:-64.764482
   },
@@ -2713,9 +2724,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_bermudana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"Yes", conservation:"Endangered",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P7_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P7_Trunk.jpg", extra:[]},
     lat:32.291726, lng:-64.764521
   },
@@ -2733,9 +2745,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Livistona_chinensis", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P8_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P8_Trunk.jpg", extra:[]},
     lat:32.291712, lng:-64.764484
   },
@@ -2753,9 +2766,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Phoenix_sylvestris", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P9_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P9_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P9_Trunk.jpg", extra:[]},
     lat:32.291719, lng:-64.764428
   },
@@ -2773,9 +2787,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Chamaerops_humilis", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P10_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P10_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P10_Trunk.jpg", extra:[]},
     lat:32.291742, lng:-64.764393
   },
@@ -2793,9 +2808,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Pritchardia_thurstonii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"entire", endemic:"No", conservation:"Vulnerable",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P11_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P11_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P11_Trunk.jpg", extra:[]},
     lat:32.291713, lng:-64.764347
   },
@@ -2813,9 +2829,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Thrinax_radiata", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:null,
     photoDate:"June 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Near Threatened",
     photos:{foliage:null, form:null, cone:null, extra:[]},
     lat:32.291712, lng:-64.764383
   },
@@ -2833,9 +2850,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Dictyosperma_album", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Critically Endangered",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P13_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P13_Trunk.jpg", extra:[]},
     lat:32.291683, lng:-64.764409
   },
@@ -2853,9 +2871,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Livistona_chinensis", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P14_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P14_Trunk.jpg", extra:[]},
     lat:32.291664, lng:-64.764463
   },
@@ -2873,9 +2892,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Phoenix_roebelenii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P15_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P15_Trunk.jpg", extra:[]},
     lat:32.291664, lng:-64.764487
   },
@@ -2893,9 +2913,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Phoenix_roebelenii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P16_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P16_Trunk.jpg", extra:[]},
     lat:32.291668, lng:-64.764507
   },
@@ -2913,9 +2934,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Phoenix_roebelenii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P17_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P17_Trunk.jpg", extra:[]},
     lat:32.291633, lng:-64.764499
   },
@@ -2933,9 +2955,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Phoenix_roebelenii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P18_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P18_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P18_Trunk.jpg", extra:[]},
     lat:32.291638, lng:-64.764478
   },
@@ -2953,9 +2976,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Rhapis_excelsa", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:null, cone:null, extra:[]},
     lat:32.291655, lng:-64.764515
   },
@@ -2973,9 +2997,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_bermudana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"Yes", conservation:"Endangered",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P20_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P20_Trunk.jpg", extra:[]},
     lat:32.291642, lng:-64.764419
   },
@@ -2993,9 +3018,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Butia_odorata", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P21_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P21_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P21_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P21_Crown.jpg"}]},
     lat:32.291677, lng:-64.764372
   },
@@ -3013,15 +3039,16 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_mexicana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P22_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P22_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P22_Crown.jpg"}]},
     lat:32.291673, lng:-64.764317
   },
   223: {
-    name:"Footstool Palm", sci:"Livistona rotundifolia",
-    genus:"Livistona", species:"rotundifolia",
+    name:"Footstool Palm", sci:"Saribus rotundifolia",
+    genus:"Saribus", species:"rotundifolia",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
     accession:"BBG-PAL-2023-023",
     conf:1.0,
@@ -3032,10 +3059,11 @@ const T = {
     crown_habit:"Rounded fountain crown; solitary; 15–25m tall; more upright than L. chinensis",
     foliage:null, cone:null, form:null,
     bark:null, height:null,
-    notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    notes:"Livistona rotundifolia was officially reclassified to the genus Saribus in September 2011.", distfeat:null, alt:null,
+    link:"https://palmpedia.net/wiki/Saribus_rotundifolia", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P23_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P23_Trunk.jpg", extra:[]},
     lat:32.291667, lng:-64.764274
   },
@@ -3053,9 +3081,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_bermudana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"Yes", conservation:"Endangered",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P24_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P24_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P24_Trunk.jpg", extra:[]},
     lat:32.291620, lng:-64.764324
   },
@@ -3073,9 +3102,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Latania_lontaroides", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Endangered",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P25_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P25_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P25_Trunk.jpg", extra:[]},
     lat:32.291616, lng:-64.764367
   },
@@ -3093,9 +3123,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Cocos_nucifera", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P26_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P26_Trunk.jpg", extra:[]},
     lat:32.291605, lng:-64.764414
   },
@@ -3113,9 +3144,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Livistona_chinensis", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P27_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P27_Trunk.jpg", extra:[]},
     lat:32.291585, lng:-64.764463
   },
@@ -3133,9 +3165,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:"Some recent phylogenetic work (Bacon & Lewis 2010 and others) sinks the genus into Serenoa.", distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Acoelorraphe_wrightii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P28_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P28_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P28_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P28_Crown.jpg"}]},
     lat:32.291559, lng:-64.764452
   },
@@ -3153,9 +3186,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Coccothrinax_barbadensis", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P29_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P29_Trunk.jpg", extra:[]},
     lat:32.291555, lng:-64.764379
   },
@@ -3173,9 +3207,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Hyophorbe_lagenicaulis", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Critically Endangered",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P30_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P30_Trunk.jpg", extra:[]},
     lat:32.291558, lng:-64.764321
   },
@@ -3193,9 +3228,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Hyophorbe_lagenicaulis", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Critically Endangered",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P31_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P31_Trunk.jpg", extra:[]},
     lat:32.291591, lng:-64.764312
   },
@@ -3213,9 +3249,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Thrinax_radiata", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Near Threatened",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P32_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P32_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P32_Trunk.jpg", extra:[]},
     lat:32.291541, lng:-64.764258
   },
@@ -3233,9 +3270,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_mexicana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P33_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P33_Trunk.jpg", extra:[]},
     lat:32.291517, lng:-64.764303
   },
@@ -3253,9 +3291,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Phoenix_canariensis", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P34_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P34_Trunk.jpg", extra:[]},
     lat:32.291485, lng:-64.764286
   },
@@ -3273,9 +3312,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Latania_verschaffeltii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Critically Endangered",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P35_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P35_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P35_Crown.jpg"}]},
     lat:32.291487, lng:-64.764327
   },
@@ -3293,9 +3333,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Latania_verschaffeltii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"palmate", endemic:"No", conservation:"Critically Endangered",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P36_Foliage.jpg", form:null, cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P36_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P36_Crown.jpg"}]},
     lat:32.291456, lng:-64.764333
   },
@@ -3313,9 +3354,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Hyophorbe_verschaffeltii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Critically Endangered",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P37_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P37_Trunk.jpg", extra:[]},
     lat:32.291532, lng:-64.764394
   },
@@ -3333,9 +3375,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Hyophorbe_verschaffeltii", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Critically Endangered",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P38_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P38_Trunk.jpg", extra:[]},
     lat:32.291500, lng:-64.764367
   },
@@ -3353,9 +3396,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Phoenix_loureiroi", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P39_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P39_Trunk.jpg", extra:[]},
     lat:32.291480, lng:-64.764406
   },
@@ -3373,9 +3417,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Phoenix_loureiroi", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P40_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P40_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P40_Crown.jpg"}]},
     lat:32.291443, lng:-64.764374
   },
@@ -3393,9 +3438,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_minor", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P41_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P41_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P41_Trunk.jpg", extra:[]},
     lat:32.291411, lng:-64.764369
   },
@@ -3413,9 +3459,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_bermudana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"Yes", conservation:"Endangered",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P42_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P42_Trunk.jpg", extra:[]},
     lat:32.291431, lng:-64.764323
   },
@@ -3433,9 +3480,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_bermudana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"Yes", conservation:"Endangered",
     photos:{foliage:null, form:null, cone:null, extra:[]},
     lat:32.291464, lng:-64.764245
   },
@@ -3453,9 +3501,10 @@ const T = {
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:null, challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_mexicana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P44_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P44_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P44_Crown.jpg"}]},
     lat:32.291622, lng:-64.764277
   },
@@ -3727,12 +3776,16 @@ function showPanel(id, marker) {
   document.getElementById('rfruit').style.display       = isPalm ? '' : 'none';
   document.getElementById('rtrunk').style.display       = isPalm ? '' : 'none';
   document.getElementById('rcrown-habit').style.display = isPalm ? '' : 'none';
+  document.getElementById('rendemic').style.display     = isPalm ? '' : 'none';
+  document.getElementById('rconservation').style.display = isPalm ? '' : 'none';
   if (isPalm) {
     alwaysRow('rleaf',        'pleaf',        t.leaf);
     alwaysRow('rpalm-flower', 'ppalm-flower', t.flower);
     alwaysRow('rfruit',       'pfruit',       t.fruit);
     alwaysRow('rtrunk',       'ptrunk',       t.trunk);
     alwaysRow('rcrown-habit', 'pcrown-habit', t.crown_habit);
+    sr('rendemic',     'pendemic',     t.endemic);
+    sr('rconservation','pconservation',t.conservation);
   }
 
   if (isPalm) {
@@ -4327,6 +4380,7 @@ function rebuildTaxonFilters() {
 
   // Classification filter — roses only (t.species holds the class value for roses)
   const roseOnly = collChecked.length === 1 && collChecked[0] === 'Rose';
+  const palmOnly = collChecked.length === 1 && collChecked[0] === 'Palm';
   const classChecked = [...document.querySelectorAll('.fclass:checked')].map(el => el.value);
   document.getElementById('fsb-class').innerHTML = roseOnly
     ? `<div class="fsb-lbl">Classification</div>` +
@@ -4334,8 +4388,22 @@ function rebuildTaxonFilters() {
         .map(c => `<label class="fsb-item"><input type="checkbox" class="fclass" value="${c}" onchange="applyFilters()"${classChecked.includes(c)?' checked':''}> ${c}</label>`).join('')
     : '';
 
-  // Hide Confidence for roses (all have conf:null — filter would do nothing)
-  document.getElementById('fsb-conf').style.display = roseOnly ? 'none' : '';
+  // Palm-specific filters
+  const mkFilter = (sectionId, label, cls, values, checked) => {
+    document.getElementById(sectionId).innerHTML = palmOnly && values.length
+      ? `<div class="fsb-lbl">${label}</div>` +
+        values.map(v => `<label class="fsb-item"><input type="checkbox" class="${cls}" value="${v}" onchange="applyFilters()"${checked.includes(v)?' checked':''}> ${v}</label>`).join('')
+      : '';
+  };
+  const leafArchChecked  = [...document.querySelectorAll('.fleaf-arch:checked')].map(el => el.value);
+  const endemicChecked   = [...document.querySelectorAll('.fendemic:checked')].map(el => el.value);
+  const consChecked      = [...document.querySelectorAll('.fconservation:checked')].map(el => el.value);
+  mkFilter('fsb-leaf-arch',   'Leaf Architecture', 'fleaf-arch',   [...new Set(src.map(t => t.leaf_arch).filter(Boolean))].sort(), leafArchChecked);
+  mkFilter('fsb-endemic',     'Bermuda Endemic',   'fendemic',     [...new Set(src.map(t => t.endemic).filter(Boolean))].sort(), endemicChecked);
+  mkFilter('fsb-conservation','Conservation Status','fconservation',[...new Set(src.map(t => t.conservation).filter(Boolean))].sort(), consChecked);
+
+  // Hide Confidence for roses and palms (all have conf:null or 100% — filter adds no value)
+  document.getElementById('fsb-conf').style.display = (roseOnly || palmOnly) ? 'none' : '';
 
   rebuildLegend();
 }
@@ -4386,6 +4454,9 @@ function getFilteredIds() {
   const genusChecked = [...document.querySelectorAll('.fgenus:checked')].map(el => el.value);
   const classChecked = [...document.querySelectorAll('.fclass:checked')].map(el => el.value);
   const confChecked  = [...document.querySelectorAll('.fconf:checked')].map(el => el.value);
+  const leafArchChecked  = [...document.querySelectorAll('.fleaf-arch:checked')].map(el => el.value);
+  const endemicChecked   = [...document.querySelectorAll('.fendemic:checked')].map(el => el.value);
+  const consChecked      = [...document.querySelectorAll('.fconservation:checked')].map(el => el.value);
   return Object.entries(T)
     .filter(([id, t]) => {
       if (q && !`${id} ${t.name} ${t.genus} ${t.species} ${t.sci}`.toLowerCase().includes(q)) return false;
@@ -4397,6 +4468,9 @@ function getFilteredIds() {
         const c = t.conf ?? 0;
         if (!confChecked.some(b => b==='low'?c<0.4 : b==='med'?(c>=0.4&&c<0.7) : c>=0.7)) return false;
       }
+      if (leafArchChecked.length && !leafArchChecked.includes(t.leaf_arch)) return false;
+      if (endemicChecked.length && !endemicChecked.includes(t.endemic)) return false;
+      if (consChecked.length && !consChecked.includes(t.conservation)) return false;
       return true;
     })
     .map(([id]) => id);
@@ -4414,7 +4488,7 @@ function applyFilters() {
 
 function clearFilters() {
   document.getElementById('fsearch').value = '';
-  document.querySelectorAll('.fcoll,.ffam,.fgenus,.fclass,.fconf').forEach(el => { el.checked = false; });
+  document.querySelectorAll('.fcoll,.ffam,.fgenus,.fclass,.fconf,.fleaf-arch,.fendemic,.fconservation').forEach(el => { el.checked = false; });
   rebuildTaxonFilters();
   applyFilters();
   const sb = document.querySelector('.filter-sidebar');
