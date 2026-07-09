@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="conifer-map-version" content="0.6">
-<meta name="conifer-map-edited" content="2026-06-09">
+<meta name="conifer-map-edited" content="2026-07-09">
 <title>Bermuda Botanical Gardens — Interactive Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -194,7 +194,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
   </div>
   <div class="mapcol">
     <div style="display:flex;align-items:center;margin-bottom:6px">
-      <p class="maplbl" style="margin:0;flex:1"><span id="maplbl-title">Bermuda Botanical Gardens</span> &middot; <span id="speccount">167</span> specimens</p>
+      <p class="maplbl" style="margin:0;flex:1"><span id="maplbl-title">Bermuda Botanical Gardens</span> &middot; <span id="speccount">173</span> specimens</p>
       <button class="addbtn" id="filterbtn" onclick="toggleMobileFilter()">Filter</button>
       <button class="printbtn" style="margin:0" onclick="openPrint()">List View</button>
       <button class="addbtn" id="addbtn" onclick="toggleAddMode()">Add Tree</button>
@@ -303,7 +303,15 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
           <div class="stat"><div class="snum" style="color:#888780" id="su-pal">0</div><div class="slbl">unknown</div></div>
         </div>
       </div>
-      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-06-09</div>
+      <div id="prog-ficus">
+        <div style="font-size:10px;font-weight:600;color:#6B3FA0;text-transform:uppercase;letter-spacing:.05em;margin-top:8px;margin-bottom:3px">Ficus Collection</div>
+        <div class="stats">
+          <div class="stat"><div class="snum" style="color:#1D9E75" id="sc-fic">0</div><div class="slbl">confirmed</div></div>
+          <div class="stat"><div class="snum" style="color:#BA7517" id="st-fic">0</div><div class="slbl">tentative</div></div>
+          <div class="stat"><div class="snum" style="color:#888780" id="su-fic">0</div><div class="slbl">unknown</div></div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-07-09</div>
     </div>
   </div>
 </div>
@@ -354,11 +362,14 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
 
 <script>
 const GBG={Juniperus:"#DAF0EC",Hesperocyparis:"#FAECE7",Chamaecyparis:"#EEEDFE",Platycladus:"#E6F1FB",Araucaria:"#FDF0E6",Ginkgo:"#FDFBE6",Cupressus:"#F5E8D8",Thuja:"#E2EFE2",Rosa:"#FCEEF4",
-           Sabal:"#FDF5E0",Phoenix:"#FDF5E0",Livistona:"#FDF5E0",Saribus:"#FDF5E0",Washingtonia:"#FDF5E0",Hyophorbe:"#FDF5E0",Latania:"#FDF5E0",Copernicia:"#FDF5E0",Roystonea:"#FDF5E0",Chamaerops:"#FDF5E0",Cocos:"#FDF5E0",Thrinax:"#FDF5E0",Pritchardia:"#FDF5E0",Dictyosperma:"#FDF5E0",Rhapis:"#FDF5E0",Butia:"#FDF5E0",Acoelorrhaphe:"#FDF5E0",Coccothrinax:"#FDF5E0",Adonidia:"#FDF5E0",Veitchia:"#FDF5E0",Gaussia:"#FDF5E0"};
+           Sabal:"#FDF5E0",Phoenix:"#FDF5E0",Livistona:"#FDF5E0",Saribus:"#FDF5E0",Washingtonia:"#FDF5E0",Hyophorbe:"#FDF5E0",Latania:"#FDF5E0",Copernicia:"#FDF5E0",Roystonea:"#FDF5E0",Chamaerops:"#FDF5E0",Cocos:"#FDF5E0",Thrinax:"#FDF5E0",Pritchardia:"#FDF5E0",Dictyosperma:"#FDF5E0",Rhapis:"#FDF5E0",Butia:"#FDF5E0",Acoelorrhaphe:"#FDF5E0",Coccothrinax:"#FDF5E0",Adonidia:"#FDF5E0",Veitchia:"#FDF5E0",Gaussia:"#FDF5E0",
+           Ficus:"#F0EAF8"};
 const GTX={Juniperus:"#085041",Hesperocyparis:"#712B13",Chamaecyparis:"#3C3489",Platycladus:"#0C447C",Araucaria:"#6B3310",Ginkgo:"#5A4A00",Cupressus:"#6B4A1A",Thuja:"#2E5B2E",Rosa:"#7A2045",
-           Sabal:"#7A5500",Phoenix:"#7A5500",Livistona:"#7A5500",Saribus:"#7A5500",Washingtonia:"#7A5500",Hyophorbe:"#7A5500",Latania:"#7A5500",Copernicia:"#7A5500",Roystonea:"#7A5500",Chamaerops:"#7A5500",Cocos:"#7A5500",Thrinax:"#7A5500",Pritchardia:"#7A5500",Dictyosperma:"#7A5500",Rhapis:"#7A5500",Butia:"#7A5500",Acoelorrhaphe:"#7A5500",Coccothrinax:"#7A5500",Adonidia:"#7A5500",Veitchia:"#7A5500",Gaussia:"#7A5500"};
+           Sabal:"#7A5500",Phoenix:"#7A5500",Livistona:"#7A5500",Saribus:"#7A5500",Washingtonia:"#7A5500",Hyophorbe:"#7A5500",Latania:"#7A5500",Copernicia:"#7A5500",Roystonea:"#7A5500",Chamaerops:"#7A5500",Cocos:"#7A5500",Thrinax:"#7A5500",Pritchardia:"#7A5500",Dictyosperma:"#7A5500",Rhapis:"#7A5500",Butia:"#7A5500",Acoelorrhaphe:"#7A5500",Coccothrinax:"#7A5500",Adonidia:"#7A5500",Veitchia:"#7A5500",Gaussia:"#7A5500",
+           Ficus:"#3D1F6A"};
 const GCOL={Juniperus:"#0B6E5A",Hesperocyparis:"#D85A30",Chamaecyparis:"#7F77DD",Platycladus:"#378ADD",Araucaria:"#C47030",Ginkgo:"#B8A800",Cupressus:"#A87832",Thuja:"#4E9858",Rosa:"#C04070",
-            Sabal:"#C89020",Phoenix:"#C89020",Livistona:"#C89020",Saribus:"#C89020",Washingtonia:"#C89020",Hyophorbe:"#C89020",Latania:"#C89020",Copernicia:"#C89020",Roystonea:"#C89020",Chamaerops:"#C89020",Cocos:"#C89020",Thrinax:"#C89020",Pritchardia:"#C89020",Dictyosperma:"#C89020",Rhapis:"#C89020",Butia:"#C89020",Acoelorrhaphe:"#C89020",Coccothrinax:"#C89020",Adonidia:"#C89020",Veitchia:"#C89020",Gaussia:"#C89020"};
+            Sabal:"#C89020",Phoenix:"#C89020",Livistona:"#C89020",Saribus:"#C89020",Washingtonia:"#C89020",Hyophorbe:"#C89020",Latania:"#C89020",Copernicia:"#C89020",Roystonea:"#C89020",Chamaerops:"#C89020",Cocos:"#C89020",Thrinax:"#C89020",Pritchardia:"#C89020",Dictyosperma:"#C89020",Rhapis:"#C89020",Butia:"#C89020",Acoelorrhaphe:"#C89020",Coccothrinax:"#C89020",Adonidia:"#C89020",Veitchia:"#C89020",Gaussia:"#C89020",
+            Ficus:"#6B3FA0"};
 const SCOLS={Confirmed:"#1D9E75",Tentative:"#BA7517",Unknown:"#888780"};
 const BCLS={Confirmed:"bc",Tentative:"bt",Unknown:"bu"};
 const SSYM={Confirmed:"●",Tentative:"▲",Unknown:"?"};
@@ -2980,7 +2991,7 @@ const T = {
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
     leaf_arch:"palmate", endemic:"No", conservation:"Least Concern",
-    photos:{foliage:null, form:null, cone:null, extra:[]},
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P19_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P19_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P19_Trunk.jpg", extra:[]},
     lat:32.291655, lng:-64.764515
   },
   220: {
@@ -3446,45 +3457,45 @@ const T = {
     lat:32.291411, lng:-64.764369
   },
   242: {
-    name:"Bermuda Palmetto", sci:"Sabal bermudana",
-    genus:"Sabal", species:"bermudana",
+    name:"Rio Grande Palmetto", sci:"Sabal mexicana",
+    genus:"Sabal", species:"mexicana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
     accession:"BBG-PAL-2023-042",
     conf:1.0,
-    leaf:"costapalmate; stiff deeply divided; green rigid segments; petiole unarmed",
-    flower:"interfoliar; bisexual; long arching panicles; cream flowers",
-    fruit:"spherical drupe; black; single seed",
-    trunk:"thick robust column; rough grey-brown; persistent leaf-base fibres in younger trees",
-    crown_habit:"full rounded crown; solitary; heavy canopy",
+    leaf:"Costapalmate; large stiff fan; deeply divided segments; green; petiole unarmed; costa curves the fan blade",
+    flower:"Interfoliar; bisexual; long arching branched panicles; cream-white flowers",
+    fruit:"Spherical to pear-shaped drupe; black at maturity; single seed",
+    trunk:"Massive solitary column; smooth grey; self-cleaning with age; up to 50–60cm diameter",
+    crown_habit:"Large rounded crown; solitary; up to 15–20m; stately imposing form",
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:"https://www.palmpedia.net/wiki/Sabal_bermudana", challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_mexicana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
-    leaf_arch:"costapalmate", endemic:"Yes", conservation:"Endangered",
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P42_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P42_Trunk.jpg", extra:[]},
     lat:32.291431, lng:-64.764323
   },
   243: {
-    name:"Bermuda Palmetto", sci:"Sabal bermudana",
-    genus:"Sabal", species:"bermudana",
+    name:"Rio Grande Palmetto", sci:"Sabal mexicana",
+    genus:"Sabal", species:"mexicana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
     accession:"BBG-PAL-2023-043",
     conf:1.0,
-    leaf:"costapalmate; stiff deeply divided; green rigid segments; petiole unarmed",
-    flower:"interfoliar; bisexual; long arching panicles; cream flowers",
-    fruit:"spherical drupe; black; single seed",
-    trunk:"thick robust column; rough grey-brown; persistent leaf-base fibres in younger trees",
-    crown_habit:"full rounded crown; solitary; heavy canopy",
+    leaf:"Costapalmate; large stiff fan; deeply divided segments; green; petiole unarmed; costa curves the fan blade",
+    flower:"Interfoliar; bisexual; long arching branched panicles; cream-white flowers",
+    fruit:"Spherical to pear-shaped drupe; black at maturity; single seed",
+    trunk:"Massive solitary column; smooth grey; self-cleaning with age; up to 50–60cm diameter",
+    crown_habit:"Large rounded crown; solitary; up to 15–20m; stately imposing form",
     foliage:null, cone:null, form:null,
     bark:null, height:null,
     notes:null, distfeat:null, alt:null,
-    link:"https://www.palmpedia.net/wiki/Sabal_bermudana", challenge:null,
+    link:"https://www.palmpedia.net/wiki/Sabal_mexicana", challenge:null,
     firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
     photoDate:"June 2026",
-    leaf_arch:"costapalmate", endemic:"Yes", conservation:"Endangered",
-    photos:{foliage:null, form:null, cone:null, extra:[]},
+    leaf_arch:"costapalmate", endemic:"No", conservation:"Least Concern",
+    photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P43_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P43_Trunk.jpg", extra:[]},
     lat:32.291464, lng:-64.764245
   },
   244: {
@@ -3508,6 +3519,114 @@ const T = {
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P44_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P44_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P44_Crown.jpg"}]},
     lat:32.291622, lng:-64.764277
   },
+  301: {
+    name:"Indian Banyan", sci:"Ficus benghalensis",
+    genus:"Ficus", species:"benghalensis",
+    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    accession:"BBG-FIC-2026-001",
+    conf:null,
+    foliage:"Large, broadly ovate, leathery; bold veins; rusty-haired underside",
+    cone:"Sessile paired figs; ripen red-orange",
+    form:"Massive, wide-spreading banyan",
+    bark:"Smooth grey-brown bark; many woody pillar/prop roots resembling an Elephant's tail",
+    height:"Est. 100+ years",
+    notes:null, distfeat:null, alt:null,
+    link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:851713-1", challenge:null,
+    firstRecorded:"23 June 2026", lastObserved:"23 June 2026",
+    photoDate:"June 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F1_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F1_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F1_Trunk.jpg", extra:[{key:"fruit",label:"Fruit / Fig",src:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F1_Fruit.jpg"}]},
+    lat:32.291305, lng:-64.764437
+  },
+  302: {
+    name:"Rubber Tree", sci:"Ficus elastica",
+    genus:"Ficus", species:"elastica",
+    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    accession:"BBG-FIC-2026-002",
+    conf:null,
+    foliage:"Large, thick, glossy oblong; bold pale midrib; fine parallel veins; red leaf sheath",
+    cone:"Small oval figs, paired in axils; rarely set here",
+    form:"Large; spreading, often multi-stemmed",
+    bark:"Smooth grey bark; aerial roots form a prop-root skirt",
+    height:"Est. 100+ years",
+    notes:null, distfeat:null, alt:null,
+    link:"https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?kempercode=b597", challenge:null,
+    firstRecorded:"23 June 2026", lastObserved:"23 June 2026",
+    photoDate:"June 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F2_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F2_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F2_Trunk.jpg", extra:[]},
+    lat:32.290958, lng:-64.764969
+  },
+  303: {
+    name:"Peepul / Sacred Fig", sci:"Ficus religiosa",
+    genus:"Ficus", species:"religiosa",
+    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    accession:"BBG-FIC-2026-003",
+    conf:null,
+    foliage:"Heart-shaped with a long tapering drip-tip (up to half the blade length) — diagnostic; glossy; leathery; 10–17cm; coppery-pink new growth; long flexible petiole makes leaves flutter",
+    cone:"Small round figs, paired and stalkless in leaf axils; ripen purple to dark violet-black; ~1–1.5cm",
+    form:"Large spreading semi-deciduous tree; 15–25m; open rounded to broad crown; briefly leafless in cool/dry season; usually free-standing, occasionally begins as a mild strangler",
+    bark:"Grey, smooth to lightly fissured bark; broad buttressed base with age; usually single-trunked; aerial roots minimal",
+    height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:853563-1", challenge:null,
+    firstRecorded:"23 June 2026", lastObserved:"23 June 2026",
+    photoDate:"June 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F3_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F3_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F3_Trunk.jpg", extra:[]},
+    lat:32.291116, lng:-64.765069
+  },
+  304: {
+    name:"Variegated Rubber Tree", sci:"Ficus elastica 'Tineke'",
+    genus:"Ficus", species:"elastica 'Tineke'",
+    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    accession:"BBG-FIC-2026-004",
+    conf:null,
+    foliage:"Large, thick, glossy oblong; bold pale midrib; fine parallel veins. Variegated: green centre, cream margins; pink new growth",
+    cone:"As species; rarely fruits; grown for foliage",
+    form:"Compact shrub to small tree",
+    bark:"Smooth grey bark; aerial roots",
+    height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://www.rhs.org.uk/plants/304267/ficus-elastica-tineke-(v)/details", challenge:null,
+    firstRecorded:"23 June 2026", lastObserved:"23 June 2026",
+    photoDate:"June 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F4_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F4_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F4_Trunk.jpg", extra:[]},
+    lat:32.291322, lng:-64.764791
+  },
+  305: {
+    name:"Peepul / Sacred Fig", sci:"Ficus religiosa",
+    genus:"Ficus", species:"religiosa",
+    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    accession:"BBG-FIC-2026-005",
+    conf:null,
+    foliage:"Heart-shaped with a long tapering drip-tip (up to half the blade length) — diagnostic; glossy; leathery; 10–17cm; coppery-pink new growth; long flexible petiole makes leaves flutter",
+    cone:"Small round figs, paired and stalkless in leaf axils; ripen purple to dark violet-black; ~1–1.5cm",
+    form:"Large spreading semi-deciduous tree; 15–25m; open rounded to broad crown; briefly leafless in cool/dry season; usually free-standing, occasionally begins as a mild strangler",
+    bark:"Grey, smooth to lightly fissured bark; broad buttressed base with age; usually single-trunked; aerial roots minimal",
+    height:null,
+    notes:"Coordinates TBC", distfeat:null, alt:null,
+    link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:853563-1", challenge:null,
+    firstRecorded:"9 July 2026", lastObserved:"9 July 2026",
+    photoDate:null,
+    photos:{foliage:null, form:null, cone:null, extra:[]},
+    lat:32.291783, lng:-64.764965
+  },
+  306: {
+    name:"Chinese Banyan / Indian Laurel", sci:"Ficus microcarpa",
+    genus:"Ficus", species:"microcarpa",
+    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    accession:"BBG-FIC-2026-006",
+    conf:null,
+    foliage:"Elliptic to obovate; blunt or shortly pointed tip (no drip-tail); glossy dark green; leathery; 4–10cm; dense uniform canopy; short petiole",
+    cone:"Small round figs, paired or solitary, stalkless; ripen yellow through pink to dark red/purple; ~0.8–1.2cm",
+    form:"Very large dense evergreen banyan; 10–20m (to 25m); broad umbrella crown often wider than tall; invasive in Bermuda — self-seeds aggressively",
+    bark:"Smooth pale grey bark; abundant slender aerial roots descending to form prop-trunks, strongly buttressed, often multi-trunked",
+    height:null,
+    notes:"Coordinates TBC. Invasive in Bermuda — self-seeds aggressively", distfeat:null, alt:null,
+    link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:853217-1", challenge:null,
+    firstRecorded:"9 July 2026", lastObserved:"9 July 2026",
+    photoDate:null,
+    photos:{foliage:null, form:null, cone:null, extra:[]},
+    lat:32.292604, lng:-64.763420
+  },
 };
 
 // ── SURVEY STATS ──────────────────────────────────────────────────────────────
@@ -3522,6 +3641,9 @@ function recomputeStats() {
   document.getElementById('sc-pal').textContent = byCol('Palm', 'Confirmed');
   document.getElementById('st-pal').textContent = byCol('Palm', 'Tentative');
   document.getElementById('su-pal').textContent = byCol('Palm', 'Unknown');
+  document.getElementById('sc-fic').textContent = byCol('Ficus', 'Confirmed');
+  document.getElementById('st-fic').textContent = byCol('Ficus', 'Tentative');
+  document.getElementById('su-fic').textContent = byCol('Ficus', 'Unknown');
 }
 
 recomputeStats();
@@ -3573,11 +3695,25 @@ L.polygon([
   interactive: false
 }).addTo(map);
 
+// ── FICUS GARDEN BOUNDARY ────────────────────────────────────────────────────
+L.polygon([
+  [32.291188, -64.765185],  // C1
+  [32.291372, -64.764805],  // C2
+  [32.291365, -64.764420],  // C3
+  [32.291270, -64.764335],  // C4
+  [32.290897, -64.764977],  // C5
+], {
+  color: '#6B3FA0', weight: 1.5, dashArray: '6,4',
+  fillOpacity: 0,
+  interactive: false
+}).addTo(map);
+
 // ── AREA LABELS ───────────────────────────────────────────────────────────────
 const AREA_LABELS = [
   { lat: 32.293556, lng: -64.763050, text: 'Conifer Collection' },
   { lat: 32.293379, lng: -64.761635, text: 'Rose Collection' },
-  { lat: 32.291695, lng: -64.764419, text: 'Palm Collection' }
+  { lat: 32.291695, lng: -64.764419, text: 'Palm Collection' },
+  { lat: 32.291218, lng: -64.764744, text: 'Ficus Collection' },
 ];
 const labelStyle = [
   'font-family:system-ui,-apple-system,sans-serif',
@@ -3656,8 +3792,9 @@ map.addLayer(clusterGroup);
 // Returns display ID: C1–C57 for conifers, R1–R66 for roses (101–200), P1–P50 for palms (201+)
 function dispId(id) {
   const n = parseInt(id);
-  if (T[n]?.collection === 'Palm') return 'P' + (n - 200);
-  if (T[n]?.collection === 'Rose') return 'R' + (n - 100);
+  if (T[n]?.collection === 'Palm')  return 'P' + (n - 200);
+  if (T[n]?.collection === 'Rose')  return 'R' + (n - 100);
+  if (T[n]?.collection === 'Ficus') return 'F' + (n - 300);
   return 'C' + n;
 }
 
@@ -3757,8 +3894,9 @@ function showPanel(id, marker) {
     document.getElementById(cid).textContent = val || '—';
   };
 
-  const isRose = t.collection === 'Rose';
-  const isPalm = t.collection === 'Palm';
+  const isRose  = t.collection === 'Rose';
+  const isPalm  = t.collection === 'Palm';
+  const isFicus = t.collection === 'Ficus';
 
   // Rose-specific rows
   document.getElementById('rflower-colour').style.display = isRose ? '' : 'none';
@@ -3803,7 +3941,11 @@ function showPanel(id, marker) {
     alwaysRow('rfoliage', 'pfoliage', t.foliage);
     alwaysRow('rform',    'pform',    t.form);
   } else {
-    // Conifers: key identifiers always shown in fixed order; height only if present
+    // Conifers and Ficus: same field structure, different labels
+    document.querySelector('#rfoliage td:first-child').textContent  = isFicus ? 'Leaf' : 'Foliage';
+    document.querySelector('#rcone td:first-child').textContent     = isFicus ? 'Fruit / Fig' : 'Cones';
+    document.querySelector('#rbark td:first-child').textContent     = isFicus ? 'Bark & Aerial Roots' : 'Bark';
+    document.querySelector('#rheight td:first-child').textContent   = isFicus ? 'Est. Age' : 'Height';
     alwaysRow('rfoliage','pfoliage',t.foliage);
     alwaysRow('rcone','pcone',t.cone);
     alwaysRow('rform','pform',t.form);
@@ -3953,6 +4095,9 @@ function buildPrintCard(id) {
     : t.collection === 'Palm'
     ? [['Leaf',t.leaf],['Flower',t.flower],['Fruit / Seed',t.fruit],
        ['Trunk',t.trunk],['Crown & Habit',t.crown_habit],['Field notes',t.notes]]
+    : t.collection === 'Ficus'
+    ? [['Family',t.fam],['Leaf',t.foliage],['Fruit / Fig',t.cone],
+       ['Form',t.form],['Bark & Aerial Roots',t.bark],['Field notes',t.notes]]
     : [['Family',t.fam],['Cones',t.cone],['Form',t.form],['Bark',t.bark],['Field notes',t.notes]];
   const rows = rowDefs.filter(([,v]) => v)
     .map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
@@ -4093,10 +4238,16 @@ const PHOTO_SLOTS = [
   {key:'form',    label:'Form'},
   {key:'cone',    label:'Cone / Bark'}
 ];
-const COLL_PHOTO3 = { Rose: 'Flower', Palm: 'Trunk' };
+const COLL_PHOTO3 = { Rose: 'Flower', Palm: 'Trunk', Ficus: 'Trunk' };
+const COLL_PHOTO1 = { Ficus: 'Leaf' };
 function photoSlots(collection) {
+  const l1 = COLL_PHOTO1[collection];
   const l3 = COLL_PHOTO3[collection];
-  return l3 ? [PHOTO_SLOTS[0], PHOTO_SLOTS[1], {key:'cone', label:l3}] : PHOTO_SLOTS;
+  return [
+    l1 ? {key:'foliage', label:l1} : PHOTO_SLOTS[0],
+    PHOTO_SLOTS[1],
+    l3 ? {key:'cone',    label:l3} : PHOTO_SLOTS[2],
+  ];
 }
 let lbPhotos = []; // [{src, caption}] for current tree
 let lbIdx    = 0;
@@ -4335,7 +4486,8 @@ Object.values(T).forEach(t => {
 const COLLECTION_VIEWS = {
   Conifer: { lat: 32.293556, lng: -64.762834, zoom: 20 },
   Rose:    { lat: 32.293379, lng: -64.761635, zoom: 20 },
-  Palm:    { lat: 32.291695, lng: -64.764419, zoom: 20 }
+  Palm:    { lat: 32.291695, lng: -64.764419, zoom: 20 },
+  Ficus:   { lat: 32.291218, lng: -64.764744, zoom: 20 },
 };
 // Overview centres all three gardens; zoom 17 fits conifer+rose (N) and palm (S, ~200m apart)
 const MAP_OVERVIEW = { lat: 32.292600, lng: -64.763200, zoom: 17 };
@@ -4421,8 +4573,9 @@ const LEG_GENERA = {
     {color:'#A87832', label:'Cupressus'},
     {color:'#4E9858', label:'Thuja'},
   ],
-  Rose: [{color:'#C04070', label:'Rosa'}],
-  Palm: [{color:'#C89020', label:'Arecaceae'}],
+  Rose:  [{color:'#C04070', label:'Rosa'}],
+  Palm:  [{color:'#C89020', label:'Arecaceae'}],
+  Ficus: [{color:'#6B3FA0', label:'Ficus'}],
 };
 
 function rebuildLegend() {
@@ -4543,7 +4696,7 @@ function applyURLParam() {
   document.getElementById('fsb-collection').style.display = 'none';
 
   // Show only the active collection in Survey Progress
-  const progMap = { Conifer: 'prog-conifer', Rose: 'prog-rose', Palm: 'prog-palm' };
+  const progMap = { Conifer: 'prog-conifer', Rose: 'prog-rose', Palm: 'prog-palm', Ficus: 'prog-ficus' };
   Object.entries(progMap).forEach(([col, id]) => {
     const el = document.getElementById(id);
     if (el) el.style.display = col === key ? '' : 'none';
