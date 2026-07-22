@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="conifer-map-version" content="0.6">
-<meta name="conifer-map-edited" content="2026-07-09">
+<meta name="conifer-map-edited" content="2026-07-22">
 <title>Bermuda Botanical Gardens — Interactive Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -194,7 +194,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
   </div>
   <div class="mapcol">
     <div style="display:flex;align-items:center;margin-bottom:6px">
-      <p class="maplbl" style="margin:0;flex:1"><span id="maplbl-title">Bermuda Botanical Gardens</span> &middot; <span id="speccount">173</span> specimens</p>
+      <p class="maplbl" style="margin:0;flex:1"><span id="maplbl-title">Bermuda Botanical Gardens</span> &middot; <span id="speccount">182</span> specimens</p>
       <button class="addbtn" id="filterbtn" onclick="toggleMobileFilter()">Filter</button>
       <button class="printbtn" style="margin:0" onclick="openPrint()">List View</button>
       <button class="addbtn" id="addbtn" onclick="toggleAddMode()">Add Tree</button>
@@ -311,7 +311,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
           <div class="stat"><div class="snum" style="color:#888780" id="su-fic">0</div><div class="slbl">unknown</div></div>
         </div>
       </div>
-      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-07-09</div>
+      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-07-22</div>
     </div>
   </div>
 </div>
@@ -432,7 +432,7 @@ const T = {
     lastObserved:"21 April 2026",
     photoDate:"April 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T3_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T3_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T3_Cone.jpg"},
-    lat:32.293686, lng:-64.763028
+    lat:32.293681, lng:-64.763058
   },
   4: {
     name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
@@ -774,7 +774,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T22_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T22_Form.jpg", cone:null},
-    lat:32.293622, lng:-64.763307
+    lat:32.293483, lng:-64.763268
   },
   23: {
     name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
@@ -792,7 +792,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T23_Form.jpg", cone:null},
-    lat:32.293653000, lng:-64.763315000
+    lat:32.293520000, lng:-64.763283000
   },
   24: {
     name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
@@ -810,7 +810,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T24_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T24_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T24_Bark.jpg"},
-    lat:32.293680000, lng:-64.763322000
+    lat:32.293553000, lng:-64.763298000
   },
   25: {
     name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
@@ -828,7 +828,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T25_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T25_Form.jpg", cone:null},
-    lat:32.293705000, lng:-64.763331000
+    lat:32.293555, lng:-64.76325
   },
   26: {
     name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
@@ -846,7 +846,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T26_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T26_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T26_Cone.jpg"},
-    lat:32.293724000, lng:-64.763297000
+    lat:32.293588, lng:-64.763306
   },
   27: {
     name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
@@ -864,7 +864,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T27_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T27_Form.jpg", cone:null},
-    lat:32.293688000, lng:-64.763284000
+    lat:32.293642000, lng:-64.763319000
   },
   28: {
     name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
@@ -900,7 +900,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T29_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T29_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T29_Cone.jpg"},
-    lat:32.293725000, lng:-64.763352000
+    lat:32.293679, lng:-64.763333
   },
   30: {
     name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
@@ -918,7 +918,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T30_Form.jpg", cone:null},
-    lat:32.293750, lng:-64.763361
+    lat:32.293725000, lng:-64.763352000
   },
   31: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
@@ -1080,7 +1080,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T39_Form.jpg", cone:null},
-    lat:32.293651, lng:-64.763086
+    lat:32.293649, lng:-64.763059
   },
   40: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
@@ -1098,7 +1098,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T40_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T40_Form.jpg", cone:null},
-    lat:32.293680, lng:-64.762991
+    lat:32.293679, lng:-64.763095
   },
   41: {
     name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
@@ -1170,7 +1170,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T44_Form.jpg", cone:null},
-    lat:32.293616, lng:-64.763027
+    lat:32.293670, lng:-64.763024
   },
   45: {
     name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
@@ -1188,7 +1188,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T45_Form.jpg", cone:null},
-    lat:32.293617, lng:-64.763007
+    lat:32.293675, lng:-64.762990
   },
   46: {
     name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
@@ -1206,7 +1206,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T46_Form.jpg", cone:null},
-    lat:32.293602, lng:-64.763016
+    lat:32.293658, lng:-64.763005
   },
   47: {
     name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
@@ -1224,7 +1224,7 @@ const T = {
     lastObserved:"30 April 2026",
     photoDate:"April 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T47_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T47_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/conifers/T47_Bark.jpg"},
-    lat:32.293633, lng:-64.763018
+    lat:32.293691, lng:-64.763013
   },
   48: {
     name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
@@ -3519,19 +3519,166 @@ const T = {
     photos:{foliage:null, form:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P44_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P44_Trunk.jpg", extra:[{key:"crown",label:"Crown",src:"https://mjacoleman91.github.io/bbs-plant-photos/palms/P44_Crown.jpg"}]},
     lat:32.291622, lng:-64.764277
   },
+  245: {
+    name:"Royal Palm", sci:"Roystonea regia",
+    genus:"Roystonea", species:"regia",
+    fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    accession:"BBG-PAL-2023-045",
+    conf:1.0,
+    leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
+    flower:"infrafoliar (below crownshaft); monoecious; large branched cream",
+    fruit:"drupe; dark purple to black at maturity; single seed",
+    trunk:"smooth grey column; prominent green crownshaft; very tall clean stem",
+    crown_habit:"tall symmetrical crown; solitary; classic avenue architecture",
+    foliage:null, cone:null, form:null,
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://www.palmpedia.net/wiki/Roystonea_regia", challenge:null,
+    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
+    photos:{foliage:null, form:null, cone:null, extra:[]},
+    lat:32.291264, lng:-64.764168
+  },
+  246: {
+    name:"Royal Palm", sci:"Roystonea regia",
+    genus:"Roystonea", species:"regia",
+    fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    accession:"BBG-PAL-2023-046",
+    conf:1.0,
+    leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
+    flower:"infrafoliar (below crownshaft); monoecious; large branched cream",
+    fruit:"drupe; dark purple to black at maturity; single seed",
+    trunk:"smooth grey column; prominent green crownshaft; very tall clean stem",
+    crown_habit:"tall symmetrical crown; solitary; classic avenue architecture",
+    foliage:null, cone:null, form:null,
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://www.palmpedia.net/wiki/Roystonea_regia", challenge:null,
+    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
+    photos:{foliage:null, form:null, cone:null, extra:[]},
+    lat:32.291321, lng:-64.764077
+  },
+  247: {
+    name:"Royal Palm", sci:"Roystonea regia",
+    genus:"Roystonea", species:"regia",
+    fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    accession:"BBG-PAL-2023-047",
+    conf:1.0,
+    leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
+    flower:"infrafoliar (below crownshaft); monoecious; large branched cream",
+    fruit:"drupe; dark purple to black at maturity; single seed",
+    trunk:"smooth grey column; prominent green crownshaft; very tall clean stem",
+    crown_habit:"tall symmetrical crown; solitary; classic avenue architecture",
+    foliage:null, cone:null, form:null,
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://www.palmpedia.net/wiki/Roystonea_regia", challenge:null,
+    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
+    photos:{foliage:null, form:null, cone:null, extra:[]},
+    lat:32.29137, lng:-64.763997
+  },
+  248: {
+    name:"Royal Palm", sci:"Roystonea regia",
+    genus:"Roystonea", species:"regia",
+    fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    accession:"BBG-PAL-2023-048",
+    conf:1.0,
+    leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
+    flower:"infrafoliar (below crownshaft); monoecious; large branched cream",
+    fruit:"drupe; dark purple to black at maturity; single seed",
+    trunk:"smooth grey column; prominent green crownshaft; very tall clean stem",
+    crown_habit:"tall symmetrical crown; solitary; classic avenue architecture",
+    foliage:null, cone:null, form:null,
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://www.palmpedia.net/wiki/Roystonea_regia", challenge:null,
+    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
+    photos:{foliage:null, form:null, cone:null, extra:[]},
+    lat:32.291429, lng:-64.763895
+  },
+  249: {
+    name:"Royal Palm", sci:"Roystonea regia",
+    genus:"Roystonea", species:"regia",
+    fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    accession:"BBG-PAL-2023-049",
+    conf:1.0,
+    leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
+    flower:"infrafoliar (below crownshaft); monoecious; large branched cream",
+    fruit:"drupe; dark purple to black at maturity; single seed",
+    trunk:"smooth grey column; prominent green crownshaft; very tall clean stem",
+    crown_habit:"tall symmetrical crown; solitary; classic avenue architecture",
+    foliage:null, cone:null, form:null,
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://www.palmpedia.net/wiki/Roystonea_regia", challenge:null,
+    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
+    photos:{foliage:null, form:null, cone:null, extra:[]},
+    lat:32.291477, lng:-64.763814
+  },
+  250: {
+    name:"Royal Palm", sci:"Roystonea regia",
+    genus:"Roystonea", species:"regia",
+    fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    accession:"BBG-PAL-2023-050",
+    conf:1.0,
+    leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
+    flower:"infrafoliar (below crownshaft); monoecious; large branched cream",
+    fruit:"drupe; dark purple to black at maturity; single seed",
+    trunk:"smooth grey column; prominent green crownshaft; very tall clean stem",
+    crown_habit:"tall symmetrical crown; solitary; classic avenue architecture",
+    foliage:null, cone:null, form:null,
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://www.palmpedia.net/wiki/Roystonea_regia", challenge:null,
+    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
+    photos:{foliage:null, form:null, cone:null, extra:[]},
+    lat:32.291529, lng:-64.763726
+  },
+  251: {
+    name:"Royal Palm", sci:"Roystonea regia",
+    genus:"Roystonea", species:"regia",
+    fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    accession:"BBG-PAL-2023-051",
+    conf:1.0,
+    leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
+    flower:"infrafoliar (below crownshaft); monoecious; large branched cream",
+    fruit:"drupe; dark purple to black at maturity; single seed",
+    trunk:"smooth grey column; prominent green crownshaft; very tall clean stem",
+    crown_habit:"tall symmetrical crown; solitary; classic avenue architecture",
+    foliage:null, cone:null, form:null,
+    bark:null, height:null,
+    notes:null, distfeat:null, alt:null,
+    link:"https://www.palmpedia.net/wiki/Roystonea_regia", challenge:null,
+    firstRecorded:"1 February 2023", lastObserved:"1 June 2026",
+    photoDate:"June 2026",
+    leaf_arch:"pinnate", endemic:"No", conservation:"Least Concern",
+    photos:{foliage:null, form:null, cone:null, extra:[]},
+    lat:32.291581, lng:-64.763637
+  },
   301: {
-    name:"Indian Banyan", sci:"Ficus benghalensis",
-    genus:"Ficus", species:"benghalensis",
-    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    name:"Giant Leaved Fig", sci:"Ficus lutea",
+    genus:"Ficus", species:"lutea",
+    fam:"Moraceae", status:"Confirmed", collection:"Ficus",
     accession:"BBG-FIC-2026-001",
     conf:null,
-    foliage:"Large, broadly ovate, leathery; bold veins; rusty-haired underside",
-    cone:"Sessile paired figs; ripen red-orange",
-    form:"Massive, wide-spreading banyan",
-    bark:"Smooth grey-brown bark; many woody pillar/prop roots resembling an Elephant's tail",
+    foliage:"Very large — to 43cm; broadly ovate-elliptic; glossy; leathery; pale yellow midrib and veins; 6–8 pairs of lateral veins; clustered at branch ends; long petioles; coppery new growth",
+    cone:"Figs stalkless, clustered at branch ends; larger, 1.5–3cm; densely hairy when young, smoothing with age; ripen yellow",
+    form:"Large briefly-deciduous tree; to 25m; very wide spreading crown, 30–45m; often short buttressed trunk; can be a strangler",
+    bark:"Smooth dark grey-brown; large sculptured buttress roots; aerial roots present; white latex",
     height:"Est. 100+ years",
-    notes:null, distfeat:null, alt:null,
-    link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:851713-1", challenge:null,
+    notes:"Field check: underside of leaf is smooth and glossy, indicating it's lutea", distfeat:null, alt:null,
+    link:"https://en.wikipedia.org/wiki/Ficus_lutea", challenge:null,
     firstRecorded:"23 June 2026", lastObserved:"23 June 2026",
     photoDate:"June 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F1_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F1_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F1_Trunk.jpg", extra:[{key:"fruit",label:"Fruit / Fig",src:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F1_Fruit.jpg"}]},
@@ -3556,18 +3703,18 @@ const T = {
     lat:32.290958, lng:-64.764969
   },
   303: {
-    name:"Peepul / Sacred Fig", sci:"Ficus religiosa",
-    genus:"Ficus", species:"religiosa",
+    name:"Indian Banyan", sci:"Ficus benghalensis",
+    genus:"Ficus", species:"benghalensis",
     fam:"Moraceae", status:"Tentative", collection:"Ficus",
     accession:"BBG-FIC-2026-003",
     conf:null,
-    foliage:"Heart-shaped with a long tapering drip-tip (up to half the blade length) — diagnostic; glossy; leathery; 10–17cm; coppery-pink new growth; long flexible petiole makes leaves flutter",
-    cone:"Small round figs, paired and stalkless in leaf axils; ripen purple to dark violet-black; ~1–1.5cm",
-    form:"Large spreading semi-deciduous tree; 15–25m; open rounded to broad crown; briefly leafless in cool/dry season; usually free-standing, occasionally begins as a mild strangler",
-    bark:"Grey, smooth to lightly fissured bark; broad buttressed base with age; usually single-trunked; aerial roots minimal",
-    height:null,
-    notes:null, distfeat:null, alt:null,
-    link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:853563-1", challenge:null,
+    foliage:"Large, broadly ovate, leathery; bold veins; rusty-haired underside",
+    cone:"Sessile paired figs; ripen red-orange",
+    form:"Massive, wide-spreading banyan",
+    bark:"Smooth grey-brown bark; many woody pillar/prop roots resembling an Elephant's tail",
+    height:"Est. 100+ years",
+    notes:"Field check: underside of leaf feels finely fuzzy indicating it's benghalensis", distfeat:null, alt:null,
+    link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:851713-1", challenge:null,
     firstRecorded:"23 June 2026", lastObserved:"23 June 2026",
     photoDate:"June 2026",
     photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F3_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F3_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F3_Trunk.jpg", extra:[]},
@@ -3576,7 +3723,7 @@ const T = {
   304: {
     name:"Variegated Rubber Tree", sci:"Ficus elastica 'Tineke'",
     genus:"Ficus", species:"elastica 'Tineke'",
-    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    fam:"Moraceae", status:"Confirmed", collection:"Ficus",
     accession:"BBG-FIC-2026-004",
     conf:null,
     foliage:"Large, thick, glossy oblong; bold pale midrib; fine parallel veins. Variegated: green centre, cream margins; pink new growth",
@@ -3594,38 +3741,74 @@ const T = {
   305: {
     name:"Peepul / Sacred Fig", sci:"Ficus religiosa",
     genus:"Ficus", species:"religiosa",
-    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    fam:"Moraceae", status:"Confirmed", collection:"Ficus",
     accession:"BBG-FIC-2026-005",
-    conf:null,
+    conf:1.0,
     foliage:"Heart-shaped with a long tapering drip-tip (up to half the blade length) — diagnostic; glossy; leathery; 10–17cm; coppery-pink new growth; long flexible petiole makes leaves flutter",
     cone:"Small round figs, paired and stalkless in leaf axils; ripen purple to dark violet-black; ~1–1.5cm",
     form:"Large spreading semi-deciduous tree; 15–25m; open rounded to broad crown; briefly leafless in cool/dry season; usually free-standing, occasionally begins as a mild strangler",
     bark:"Grey, smooth to lightly fissured bark; broad buttressed base with age; usually single-trunked; aerial roots minimal",
     height:null,
-    notes:"Coordinates TBC", distfeat:null, alt:null,
+    notes:null, distfeat:null, alt:null,
     link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:853563-1", challenge:null,
-    firstRecorded:"9 July 2026", lastObserved:"9 July 2026",
-    photoDate:null,
-    photos:{foliage:null, form:null, cone:null, extra:[]},
-    lat:32.291783, lng:-64.764965
+    firstRecorded:"14 July 2026", lastObserved:"14 July 2026",
+    photoDate:"July 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F5_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F5_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F5_Trunk.jpg", extra:[]},
+    lat:32.292215, lng:-64.764831
   },
   306: {
+    name:"Peepul / Sacred Fig", sci:"Ficus religiosa",
+    genus:"Ficus", species:"religiosa",
+    fam:"Moraceae", status:"Confirmed", collection:"Ficus",
+    accession:"BBG-FIC-2026-006",
+    conf:1.0,
+    foliage:"Heart-shaped with a long tapering drip-tip (up to half the blade length) — diagnostic; glossy; leathery; 10–17cm; coppery-pink new growth; long flexible petiole makes leaves flutter",
+    cone:"Small round figs, paired and stalkless in leaf axils; ripen purple to dark violet-black; ~1–1.5cm",
+    form:"Large spreading semi-deciduous tree; 15–25m; open rounded to broad crown; briefly leafless in cool/dry season; usually free-standing, occasionally begins as a mild strangler",
+    bark:"Grey, smooth to lightly fissured bark; broad buttressed base with age; usually single-trunked; aerial roots minimal",
+    height:null,
+    notes:"Likely self seeded from larger nearby Sacred Fig", distfeat:null, alt:null,
+    link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:853563-1", challenge:null,
+    firstRecorded:"14 July 2026", lastObserved:"14 July 2026",
+    photoDate:"July 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F6_Foliage.jpg", form:null, cone:null, extra:[]},
+    lat:32.292031, lng:-64.765032
+  },
+  307: {
     name:"Chinese Banyan / Indian Laurel", sci:"Ficus microcarpa",
     genus:"Ficus", species:"microcarpa",
     fam:"Moraceae", status:"Tentative", collection:"Ficus",
-    accession:"BBG-FIC-2026-006",
+    accession:"BBG-FIC-2026-007",
     conf:null,
     foliage:"Elliptic to obovate; blunt or shortly pointed tip (no drip-tail); glossy dark green; leathery; 4–10cm; dense uniform canopy; short petiole",
     cone:"Small round figs, paired or solitary, stalkless; ripen yellow through pink to dark red/purple; ~0.8–1.2cm",
     form:"Very large dense evergreen banyan; 10–20m (to 25m); broad umbrella crown often wider than tall; invasive in Bermuda — self-seeds aggressively",
     bark:"Smooth pale grey bark; abundant slender aerial roots descending to form prop-trunks, strongly buttressed, often multi-trunked",
     height:null,
-    notes:"Coordinates TBC. Invasive in Bermuda — self-seeds aggressively", distfeat:null, alt:null,
+    notes:null, distfeat:null, alt:null,
     link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:853217-1", challenge:null,
-    firstRecorded:"9 July 2026", lastObserved:"9 July 2026",
-    photoDate:null,
-    photos:{foliage:null, form:null, cone:null, extra:[]},
-    lat:32.292604, lng:-64.763420
+    firstRecorded:"14 July 2026", lastObserved:"14 July 2026",
+    photoDate:"July 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F7_Foliage.jpg", form:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F7_Form.jpg", cone:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F7_Trunk.jpg", extra:[]},
+    lat:32.292566, lng:-64.763239
+  },
+  308: {
+    name:"Rock Fig / Petiolate Fig", sci:"Ficus petiolaris",
+    genus:"Ficus", species:"petiolaris",
+    fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    accession:"BBG-FIC-2026-008",
+    conf:null,
+    foliage:"Heart-shaped (cordate to cordate-orbicular); 7–12cm; pale to glaucous green above; distinctive scarlet or purple veins and long reddish petioles; tufts of white hairs in the vein axils beneath — diagnostic; velvety texture; evergreen but drought-deciduous",
+    cone:"Small round figs, ~1cm; green with red velvety spots; borne on short stalks in leaf axils",
+    form:"Small to medium tree, 8–15m (to 25m in canyons); develops a swollen bulbous caudex at the base with age; can remain shrubby or dwarfed in poor conditions; a rock-strangler rather than a tree-strangler",
+    bark:"Papery, exfoliating, pale yellow-cream bark — highly distinctive; thick surface roots flow over rock like poured lava (hence \"lava tree\"); rusty-orange aerial roots grip surfaces",
+    height:null,
+    notes:"Growing in the exotic house.", distfeat:null, alt:null,
+    link:"https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:853408-1#distributions", challenge:null,
+    firstRecorded:"14 July 2026", lastObserved:"14 July 2026",
+    photoDate:"July 2026",
+    photos:{foliage:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F8_Foliage.jpg", form:null, cone:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F8_Trunk.jpg", extra:[{key:"fruit",label:"Fruit / Fig",src:"https://mjacoleman91.github.io/bbs-plant-photos/ficus/F8_Fruit.jpg"}]},
+    lat:32.292013, lng:-64.764559
   },
 };
 
