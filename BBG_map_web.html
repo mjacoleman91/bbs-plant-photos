@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="conifer-map-version" content="0.6">
-<meta name="conifer-map-edited" content="2026-07-22">
+<meta name="conifer-map-edited" content="2026-08-27">
 <title>Bermuda Botanical Gardens — Interactive Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -57,10 +57,16 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
 .snum{font-size:19px;font-weight:600}
 .slbl{font-size:11px;color:#999}
 .gps-note{font-size:10px;color:#666;background:#f4f7f2;border:1px solid #dde5d6;border-radius:6px;padding:4px 8px;margin-top:6px}
+.gps-note code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px;user-select:all}
+.removed-flag{font-size:12px;font-weight:600;color:#5f6b74;background:#eceef0;border:1px solid #dfe3e7;border-radius:6px;padding:6px 9px;margin:4px 0 2px}
+.dtbl td.blank{color:#c0c6bc}
 .excel-flag{font-size:11px;color:#7a4a00;background:#fff8e6;border:1px solid #f0d080;border-radius:6px;padding:7px 10px;margin-top:8px;line-height:1.5}
-.addbtn{font-size:12px;padding:5px 13px;cursor:pointer;border-radius:8px;border:1px solid #dde5d6;background:#fff;color:#1a1a1a;margin-left:6px}
-.addbtn:hover{background:#f4f7f2}
+.addbtn{font-size:12px;font-weight:600;letter-spacing:.2px;padding:5px 12px;cursor:pointer;border-radius:6px;border:1px solid #dde5d6;background:#fff;color:#33402c;margin-left:6px;white-space:nowrap}
+.addbtn:hover{background:#f0f4ec;border-color:#c7d3bd}
 .addbtn.active{background:#BA7517;color:#fff;border-color:#BA7517}
+/* on-map permanent name labels — text on a leader line, no box */
+.leaflet-tooltip.mlabel{background:none;border:none;box-shadow:none;border-radius:0;padding:0 0 0 15px;font-size:10px;font-weight:400;line-height:1.3;color:#28331f;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 5px #fff,0 0 7px #fff,0 0 9px #fff}
+.leaflet-tooltip.mlabel:before{content:'';display:block;position:absolute;left:0;top:50%;width:12px;height:0;border:none;border-top:1px solid #7d9470;margin:0;opacity:.9}
 .add-banner{font-size:11px;background:#fff8e6;border:1px solid #f0d080;color:#7a4a00;border-radius:6px;padding:5px 10px;margin-bottom:8px;display:none}
 .add-form-card{background:#fff;border:2px solid #BA7517;border-radius:10px;padding:14px 16px;display:none}
 .add-form-card .clbl{margin-bottom:8px}
@@ -85,9 +91,9 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
 .navrow{display:flex;gap:6px;margin-top:10px}
 .navbtn{flex:1;padding:6px 5px;font-size:11px;cursor:pointer;border-radius:8px;border:1px solid #dde5d6;background:#f4f7f2;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .navbtn:hover{background:#e8f0e4}
-.printbtn{font-size:12px;padding:5px 13px;cursor:pointer;border-radius:8px;border:1px solid #dde5d6;background:#fff;color:#1a1a1a;margin-left:auto;display:block;margin-top:8px}
+.printbtn{font-size:12px;font-weight:600;letter-spacing:.2px;padding:5px 12px;cursor:pointer;border-radius:6px;border:1px solid #dde5d6;background:#fff;color:#33402c;margin-left:auto;display:block;margin-top:8px;white-space:nowrap}
 #filterbtn{display:none}
-.printbtn:hover{background:#f4f7f2}
+.printbtn:hover{background:#f0f4ec;border-color:#c7d3bd}
 #printview{display:none;padding:16px}
 .pt-bar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .pt-bar h1{font-size:17px;font-weight:700;flex:1}
@@ -197,10 +203,14 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
       <p class="maplbl" style="margin:0;flex:1"><span id="maplbl-title">Bermuda Botanical Gardens</span> &middot; <span id="speccount">182</span> specimens</p>
       <button class="addbtn" id="filterbtn" onclick="toggleMobileFilter()">Filter</button>
       <button class="printbtn" style="margin:0" onclick="openPrint()">List View</button>
+      <button class="addbtn" id="labelbtn" onclick="cycleLabels()" title="Show plant names on the map (off / tidied / all)">Names</button>
       <button class="addbtn" id="addbtn" onclick="toggleAddMode()">Add Tree</button>
-      <button class="addbtn" id="exportbtn" onclick="exportAddedCSV()" title="Download CSV of trees added via map" style="display:none">Export to CSV</button>
+      <button class="addbtn" id="movebtn" onclick="toggleMove()" title="Drag markers to reposition them, then copy the new coordinates into the Excel file">Move</button>
+      <button class="addbtn" id="removedbtn" onclick="toggleRemoved()" title="Show specimens that have died or been removed, as faded markers">Removed</button>
+      <button class="addbtn" id="exportbtn" onclick="exportAddedCSV()" title="Download CSV of trees added or moved via the map" style="display:none">Export to CSV</button>
     </div>
     <div class="add-banner" id="addbanner">Click anywhere inside the garden to place a new tree marker.</div>
+    <div class="add-banner" id="movebanner" style="display:none">Move mode: drag a marker to its correct spot, then copy the new coordinates into the Excel file. Zoom in if markers are grouped in clusters.</div>
     <div id="map"></div>
     <div class="leg">
       <span style="font-size:11px;color:#999;margin-right:4px">Status:</span>
@@ -231,6 +241,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
       <p class="clbl">Selected specimen</p>
       <p class="tname placeholder" id="pname">Click a marker</p>
       <p class="tsci placeholder" id="psci">Hover over any marker to preview, click for full details</p>
+      <div class="removed-flag" id="premoved" style="display:none"></div>
       <div class="photos" id="pphotos" style="display:none"></div>
       <button id="pmorebtn" class="more-photos-btn" style="display:none" onclick="toggleMorePhotos()"></button>
       <div class="photos" id="pmorePhotos" style="display:none"></div>
@@ -244,6 +255,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
           <tr><td>Family</td><td id="pfam"></td></tr>
           <tr><td>Genus</td><td id="pgen"></td></tr>
           <tr><td id="pspe-lbl">Species</td><td id="pspe"></td></tr>
+          <tr id="rcultivar" style="display:none"><td>Cultivar</td><td id="pcultivar"></td></tr>
           <tr id="rflower-colour" style="display:none"><td>Flower Colour</td><td id="pflower-colour"></td></tr>
           <tr id="rfragrance-row" style="display:none"><td>Fragrance</td><td id="pfragrance"></td></tr>
           <tr id="rbloom-season" style="display:none"><td>Bloom Season</td><td id="pbloom-season"></td></tr>
@@ -311,7 +323,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
           <div class="stat"><div class="snum" style="color:#888780" id="su-fic">0</div><div class="slbl">unknown</div></div>
         </div>
       </div>
-      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-07-22</div>
+      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-08-27</div>
     </div>
   </div>
 </div>
@@ -382,8 +394,9 @@ const SSYM={Confirmed:"●",Tentative:"▲",Unknown:"?"};
 const T = {
   1: {
     name:"Mediterranean Cypress", sci:"Cupressus sempervirens",
-    genus:"Cupressus", species:"sempervirens",
+    genus:"Cupressus", species:"sempervirens", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-001",
     conf:0.2,
     foliage:"Sprays of scale-like, dark green foliage",
@@ -400,8 +413,9 @@ const T = {
   },
   2: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-002",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -417,9 +431,10 @@ const T = {
     lat:32.293721, lng:-64.763141
   },
   3: {
-    name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
-    genus:"Juniperus", species:"chinensis 'Kaizuka'",
+    name:"Hollywood juniper", sci:"Juniperus chinensis",
+    genus:"Juniperus", species:"chinensis", cultivar:"Kaizuka",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-003",
     conf:0.4,
     foliage:"Dense, twisted sprays of scale-like foliage; lime green new foliage",
@@ -436,8 +451,9 @@ const T = {
   },
   4: {
     name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
-    genus:"Platycladus", species:"orientalis",
+    genus:"Platycladus", species:"orientalis", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-004",
     conf:0.8,
     foliage:"Scale-like branchlets in flattened sprays, vertically arranged. Bright green",
@@ -453,9 +469,10 @@ const T = {
     lat:32.293735, lng:-64.76303
   },
   5: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-005",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -472,8 +489,9 @@ const T = {
   },
   6: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-006",
     conf:0.6,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -489,9 +507,10 @@ const T = {
     lat:32.293643, lng:-64.762712
   },
   7: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-007",
     conf:0.4,
     foliage:"Blue-green, scaled branchlets in dense clusters",
@@ -507,9 +526,10 @@ const T = {
     lat:32.293759, lng:-64.762804
   },
   8: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-008",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -525,9 +545,10 @@ const T = {
     lat:32.293755, lng:-64.762838
   },
   9: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-009",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -544,8 +565,9 @@ const T = {
   },
   10: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-010",
     conf:0.6,
     foliage:"Scale-like, yellow-green to dark green, fine branchlets",
@@ -561,9 +583,10 @@ const T = {
     lat:32.293595, lng:-64.762772
   },
   11: {
-    name:"Juniper Hetzii", sci:"Juniperus x pfitzeriana 'Hetzii Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Hetzii Glauca'",
+    name:"Juniper Hetzii", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Hetzii Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-011",
     conf:0.6,
     foliage:"Dense, fine-textured, slightly silvery-blue sprays of scaled foliage",
@@ -579,9 +602,10 @@ const T = {
     lat:32.293529, lng:-64.762910
   },
   12: {
-    name:"Juniper Hetzii", sci:"Juniperus x pfitzeriana 'Hetzii Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Hetzii Glauca'",
+    name:"Juniper Hetzii", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Hetzii Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-012",
     conf:0.6,
     foliage:"Dense, fine-textured, slightly silvery-blue sprays of scaled foliage",
@@ -598,8 +622,9 @@ const T = {
   },
   13: {
     name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
-    genus:"Platycladus", species:"orientalis",
+    genus:"Platycladus", species:"orientalis", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-013",
     conf:0.6,
     foliage:"Twisted and upright clusters of yellow-green scaled foliage",
@@ -615,9 +640,10 @@ const T = {
     lat:32.293423, lng:-64.762837
   },
   14: {
-    name:"Juniper Hetzii", sci:"Juniperus x pfitzeriana 'Hetzii Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Hetzii Glauca'",
+    name:"Juniper Hetzii", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Hetzii Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-014",
     conf:0.4,
     foliage:"Dense, fine-textured, slightly silvery-blue sprays of scaled foliage",
@@ -634,8 +660,9 @@ const T = {
   },
   15: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Confirmed", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-015",
     conf:1.0,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -652,8 +679,9 @@ const T = {
   },
   16: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-016",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -670,8 +698,9 @@ const T = {
   },
   17: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-017",
     conf:0.6,
     foliage:"Sharply pointed awl-shaped yellow-green foliage",
@@ -688,8 +717,9 @@ const T = {
   },
   18: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-018",
     conf:0.6,
     foliage:"Sharply pointed awl-shaped yellow-green foliage",
@@ -706,8 +736,9 @@ const T = {
   },
   19: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-019",
     conf:0.6,
     foliage:"Sharply pointed awl-shaped yellow-green foliage",
@@ -724,8 +755,9 @@ const T = {
   },
   20: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-020",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -742,8 +774,9 @@ const T = {
   },
   21: {
     name:"Norfolk Island Pine", sci:"Araucaria heterophylla",
-    genus:"Araucaria", species:"heterophylla",
+    genus:"Araucaria", species:"heterophylla", cultivar:null,
     fam:"Araucariaceae", status:"Confirmed", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-021",
     conf:1.0,
     foliage:null,
@@ -759,9 +792,10 @@ const T = {
     lat:32.293420, lng:-64.763251
   },
   22: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-022",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -777,9 +811,10 @@ const T = {
     lat:32.293483, lng:-64.763268
   },
   23: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-023",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -795,9 +830,10 @@ const T = {
     lat:32.293520000, lng:-64.763283000
   },
   24: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-024",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -813,9 +849,10 @@ const T = {
     lat:32.293553000, lng:-64.763298000
   },
   25: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-025",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -831,9 +868,10 @@ const T = {
     lat:32.293555, lng:-64.76325
   },
   26: {
-    name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
-    genus:"Juniperus", species:"chinensis 'Kaizuka'",
+    name:"Hollywood juniper", sci:"Juniperus chinensis",
+    genus:"Juniperus", species:"chinensis", cultivar:"Kaizuka",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-026",
     conf:0.4,
     foliage:"Dense, twisted sprays of scale-like foliage; lime green new foliage",
@@ -849,9 +887,10 @@ const T = {
     lat:32.293588, lng:-64.763306
   },
   27: {
-    name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
-    genus:"Juniperus", species:"chinensis 'Kaizuka'",
+    name:"Hollywood juniper", sci:"Juniperus chinensis",
+    genus:"Juniperus", species:"chinensis", cultivar:"Kaizuka",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-027",
     conf:0.4,
     foliage:"Dense, twisted sprays of scale-like foliage; lime green new foliage",
@@ -867,9 +906,10 @@ const T = {
     lat:32.293642000, lng:-64.763319000
   },
   28: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-028",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -885,9 +925,10 @@ const T = {
     lat:32.293657, lng:-64.763272
   },
   29: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-029",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -903,9 +944,10 @@ const T = {
     lat:32.293679, lng:-64.763333
   },
   30: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-030",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -922,8 +964,9 @@ const T = {
   },
   31: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-031",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -940,8 +983,9 @@ const T = {
   },
   32: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-032",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -958,8 +1002,9 @@ const T = {
   },
   33: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-033",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -976,8 +1021,9 @@ const T = {
   },
   34: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-034",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -994,8 +1040,9 @@ const T = {
   },
   35: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-035",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -1012,8 +1059,9 @@ const T = {
   },
   36: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-036",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -1030,8 +1078,9 @@ const T = {
   },
   37: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-037",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -1048,8 +1097,9 @@ const T = {
   },
   38: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-038",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -1065,9 +1115,10 @@ const T = {
     lat:32.293805, lng:-64.762764
   },
   39: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-039",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -1084,8 +1135,9 @@ const T = {
   },
   40: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-040",
     conf:0.6,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -1101,9 +1153,10 @@ const T = {
     lat:32.293679, lng:-64.763095
   },
   41: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-041",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -1120,8 +1173,9 @@ const T = {
   },
   42: {
     name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
-    genus:"Platycladus", species:"orientalis",
+    genus:"Platycladus", species:"orientalis", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-042",
     conf:0.4,
     foliage:"Sprays of green foliage, bumpy projecting scale appearance",
@@ -1137,9 +1191,10 @@ const T = {
     lat:32.293590, lng:-64.763062
   },
   43: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-043",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -1155,9 +1210,10 @@ const T = {
     lat:32.293663, lng:-64.762913
   },
   44: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-044",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -1173,9 +1229,10 @@ const T = {
     lat:32.293670, lng:-64.763024
   },
   45: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-045",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -1191,9 +1248,10 @@ const T = {
     lat:32.293675, lng:-64.762990
   },
   46: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-046",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -1210,8 +1268,9 @@ const T = {
   },
   47: {
     name:"Oriental Arbor-vitae", sci:"Platycladus orientalis",
-    genus:"Platycladus", species:"orientalis",
+    genus:"Platycladus", species:"orientalis", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-047",
     conf:0.8,
     foliage:"Sprays of green scaled foliage, yellow tips",
@@ -1227,9 +1286,10 @@ const T = {
     lat:32.293691, lng:-64.763013
   },
   48: {
-    name:"Hollywood juniper", sci:"Juniperus chinensis 'Kaizuka'",
-    genus:"Juniperus", species:"chinensis 'Kaizuka'",
+    name:"Hollywood juniper", sci:"Juniperus chinensis",
+    genus:"Juniperus", species:"chinensis", cultivar:"Kaizuka",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-048",
     conf:0.6,
     foliage:"Dense, twisted sprays of scale-like foliage; lime green new foliage",
@@ -1245,9 +1305,10 @@ const T = {
     lat:32.293660, lng:-64.762954
   },
   49: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-049",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -1263,9 +1324,10 @@ const T = {
     lat:32.293706, lng:-64.762948
   },
   50: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-050",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -1282,8 +1344,9 @@ const T = {
   },
   51: {
     name:"Maidenhair tree", sci:"Ginkgo biloba",
-    genus:"Ginkgo", species:"biloba",
+    genus:"Ginkgo", species:"biloba", cultivar:null,
     fam:"Ginkgoaceae", status:"Confirmed", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-051",
     conf:1.0,
     foliage:"Fan-shaped leaves, light green",
@@ -1300,8 +1363,9 @@ const T = {
   },
   52: {
     name:"Maidenhair tree", sci:"Ginkgo biloba",
-    genus:"Ginkgo", species:"biloba",
+    genus:"Ginkgo", species:"biloba", cultivar:null,
     fam:"Ginkgoaceae", status:"Confirmed", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-052",
     conf:1.0,
     foliage:"Fan-shaped leaves, light green",
@@ -1318,8 +1382,9 @@ const T = {
   },
   53: {
     name:"Maidenhair tree", sci:"Ginkgo biloba",
-    genus:"Ginkgo", species:"biloba",
+    genus:"Ginkgo", species:"biloba", cultivar:null,
     fam:"Ginkgoaceae", status:"Confirmed", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-053",
     conf:1.0,
     foliage:"Fan-shaped leaves, light green",
@@ -1336,8 +1401,9 @@ const T = {
   },
   54: {
     name:"Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
-    genus:"Juniperus", species:"x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-054",
     conf:0.4,
     foliage:"Green scaled foliage, rope-like",
@@ -1354,8 +1420,9 @@ const T = {
   },
   55: {
     name:"Bermuda Cedar", sci:"Juniperus bermudiana",
-    genus:"Juniperus", species:"bermudiana",
+    genus:"Juniperus", species:"bermudiana", cultivar:null,
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-055",
     conf:0.8,
     foliage:"Scale-like, dark green, fine branchlets",
@@ -1371,9 +1438,10 @@ const T = {
     lat:32.293739, lng:-64.762998
   },
   56: {
-    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Pfitzeriana Aurea'",
-    genus:"Juniperus", species:"x pfitzeriana 'Pfitzeriana Aurea'",
+    name:"Golden Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Pfitzeriana Aurea",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-056",
     conf:0.4,
     foliage:"Green, scaled branchlets in dense clusters; tinged-yellow new growth",
@@ -1389,9 +1457,10 @@ const T = {
     lat:32.293737, lng:-64.763016
   },
   57: {
-    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana 'Glauca'",
-    genus:"Juniperus", species:"x pfitzeriana 'Glauca'",
+    name:"Blue Pfitzer Juniper", sci:"Juniperus x pfitzeriana",
+    genus:"Juniperus", species:"x pfitzeriana", cultivar:"Glauca",
     fam:"Cupressaceae", status:"Tentative", collection:"Conifer",
+    removed:null, removalReason:null,
     accession:"BBG-CON-2026-057",
     conf:0.4,
     foliage:"Silvery-blue, scaled branchlets in dense clusters",
@@ -1411,6 +1480,7 @@ const T = {
     name:"BDA. Anna Olivier", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-001",
     conf:1.0,
     flower_colour:"Light yellow with darker centre; opens to large, very double, scalloped blooms in a square-cup shape. Ages progressively to deep yellow. Borne mostly solitary or in small clusters.",
@@ -1429,6 +1499,7 @@ const T = {
     name:"BDA. Yellow Mutabilis", sci:"Rosa — China Rose",
     genus:"Rosa", species:"China",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-002",
     conf:1.0,
     flower_colour:"Opens lemon-yellow with an orange stripe; individual flowers fade progressively to cream then white. Some buds open pink. Single (4–8 petals). The multi-stage colour change means several distinct colours visible simultaneously on one plant.",
@@ -1447,6 +1518,7 @@ const T = {
     name:"Red Smith's Parish", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-003",
     conf:1.0,
     flower_colour:"White; many blooms bear a streak of vivid crimson or deep pink; occasionally half pink half white; sometimes entirely pink or red. Variations visible simultaneously on same bush. Buds pale yellowish-white. Cupped; semi-double. ~2\" diameter.",
@@ -1465,6 +1537,7 @@ const T = {
     name:"Red Smith's Parish", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-004",
     conf:1.0,
     flower_colour:"White; many blooms bear a streak of vivid crimson or deep pink; occasionally half pink half white; sometimes entirely pink or red. Variations visible simultaneously on same bush. Buds pale yellowish-white. Cupped; semi-double. ~2\" diameter.",
@@ -1483,6 +1556,7 @@ const T = {
     name:"Archduke Charles", sci:"Rosa — China Rose",
     genus:"Rosa", species:"China",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-005",
     conf:1.0,
     flower_colour:"Opens pale pink; deepens to crimson with age; both colours visible simultaneously. Double (17–25 petals); ~4\" diameter; cupped then flat. Cluster-flowered.",
@@ -1501,6 +1575,7 @@ const T = {
     name:"Archduke Charles", sci:"Rosa — China Rose",
     genus:"Rosa", species:"China",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-006",
     conf:1.0,
     flower_colour:"Opens pale pink; deepens to crimson with age; both colours visible simultaneously. Double (17–25 petals); ~4\" diameter; cupped then flat. Cluster-flowered.",
@@ -1519,6 +1594,7 @@ const T = {
     name:"Indigo Major", sci:"Rosa — Species Rose",
     genus:"Rosa", species:"Species",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-007",
     conf:1.0,
     flower_colour:"Dark purple; carmine-pink shading. 60 petals. Average diameter 3\". Large double; flat bloom form.",
@@ -1537,6 +1613,7 @@ const T = {
     name:"Maitland White", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-008",
     conf:1.0,
     flower_colour:"White or white blend with blush. Medium bloom form.",
@@ -1555,6 +1632,7 @@ const T = {
     name:"Mme. Madam Lombard", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-009",
     conf:1.0,
     flower_colour:"Pink to red; salmon-pink shading. Variable; sometimes light pink to white. Large; very full (41+ petals); globular bloom form.",
@@ -1573,6 +1651,7 @@ const T = {
     name:"Papa Gontier", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-010",
     conf:1.0,
     flower_colour:"Carmine-pink; yellow undertones; carmine-red reverse; crimson buds. Large; semi-double to double; cupped-to-flat. Mostly solitary. ~5\" diameter.",
@@ -1591,6 +1670,7 @@ const T = {
     name:"Red Smith's Parish", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-011",
     conf:1.0,
     flower_colour:"White; many blooms bear a streak of vivid crimson or deep pink; occasionally half pink half white; sometimes entirely pink or red. Variations visible simultaneously on same bush. Buds pale yellowish-white. Cupped; semi-double. ~2\" diameter.",
@@ -1609,6 +1689,7 @@ const T = {
     name:"General Schablikine", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-012",
     conf:1.0,
     flower_colour:"Red; copper shading; purple reverse. Glandular; kinked or S-shaped pedicels. Large; very full (41+ petals); cupped bloom form.",
@@ -1627,6 +1708,7 @@ const T = {
     name:"Mme. Joseph Schwartz", sci:"Rosa — OGR Rose",
     genus:"Rosa", species:"OGR",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-013",
     conf:1.0,
     flower_colour:"White; pink shading; pink edges; pink center; ages to blush. White washed with flesh pink changing to salmony white. Medium double (17–25 petals); cupped; scalloped bloom form.",
@@ -1645,6 +1727,7 @@ const T = {
     name:"Mme. Joseph Schwartz", sci:"Rosa — OGR Rose",
     genus:"Rosa", species:"OGR",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-014",
     conf:1.0,
     flower_colour:"White; pink shading; pink edges; pink center; ages to blush. White washed with flesh pink changing to salmony white. Medium double (17–25 petals); cupped; scalloped bloom form.",
@@ -1663,6 +1746,7 @@ const T = {
     name:"Blush Noisette", sci:"Rosa — Noisette Rose",
     genus:"Rosa", species:"Noisette",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-015",
     conf:1.0,
     flower_colour:"Light pink; bud crimson; flowers pinkish white tinted lilac; ages to white. Up to 35 petals. 2.5\" diameter. Medium full (26–40 petals); cluster-flowered in large clusters.",
@@ -1681,6 +1765,7 @@ const T = {
     name:"The Fairy", sci:"Rosa — Polyantha Rose",
     genus:"Rosa", species:"Polyantha",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-016",
     conf:1.0,
     flower_colour:"Pink; summer heat can fade flowers toward white. 25 petals. 1.5\" diameter. Small double (17–25 petals); cluster-flowered.",
@@ -1699,6 +1784,7 @@ const T = {
     name:"Duchesse de Brabant", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-017",
     conf:1.0,
     flower_colour:"Rose-pink; yellow highlights; ages to lighter. 45 petals. Large; very double; cupped; nodding (weak neck) bloom form.",
@@ -1717,6 +1803,7 @@ const T = {
     name:"Mrs. Dudley Cross", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-018",
     conf:1.0,
     flower_colour:"Light yellow; pink highlights; crimson highlights; more shaded in autumn. Medium double (17–25 petals). 4.25\" diameter.",
@@ -1735,6 +1822,7 @@ const T = {
     name:"Green Rose", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-019",
     conf:1.0,
     flower_colour:"Green. No petals — flowers composed entirely of green petaloid sepals and bracts. Average diameter 2\". Medium; borne mostly solitary or in clusters; rosette form.",
@@ -1753,6 +1841,7 @@ const T = {
     name:"Bermuda Kathleen", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-020",
     conf:1.0,
     flower_colour:"Cream-white; ages to deep pink. Single to semi-double.",
@@ -1771,6 +1860,7 @@ const T = {
     name:"BDA's Pink Pet", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-021",
     conf:1.0,
     flower_colour:"Lilac pink. Large double (17–25 petals); cluster-flowered.",
@@ -1789,6 +1879,7 @@ const T = {
     name:"Mystery", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Unknown", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-022",
     conf:0.0,
     flower_colour:null,
@@ -1807,6 +1898,7 @@ const T = {
     name:"Prosperity", sci:"Rosa — Hybrid Musk Rose",
     genus:"Rosa", species:"Hybrid Musk",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-023",
     conf:1.0,
     flower_colour:"White; pink undertones. Small to medium; semi-double (9–16 petals); large clusters; rosette form.",
@@ -1825,6 +1917,7 @@ const T = {
     name:"BDA's Pink Pet", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-024",
     conf:1.0,
     flower_colour:"Lilac pink. Large double (17–25 petals); cluster-flowered.",
@@ -1843,6 +1936,7 @@ const T = {
     name:"Vincent Godsiff", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-025",
     conf:1.0,
     flower_colour:"Deep vivid pinky-red; almost luminous quality. Cupped; semi-double. ~2\" across. Single or small clusters.",
@@ -1861,6 +1955,7 @@ const T = {
     name:"BDA's Pink Pet", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-026",
     conf:1.0,
     flower_colour:"Lilac pink. Large double (17–25 petals); cluster-flowered.",
@@ -1879,6 +1974,7 @@ const T = {
     name:"Vincent Godsiff", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-027",
     conf:1.0,
     flower_colour:"Deep vivid pinky-red; almost luminous quality. Cupped; semi-double. ~2\" across. Single or small clusters.",
@@ -1897,6 +1993,7 @@ const T = {
     name:"Prosperity", sci:"Rosa — Hybrid Musk Rose",
     genus:"Rosa", species:"Hybrid Musk",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-028",
     conf:1.0,
     flower_colour:"White; pink undertones. Small to medium; semi-double (9–16 petals); large clusters; rosette form.",
@@ -1915,6 +2012,7 @@ const T = {
     name:"BDA's Pink Pet", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-029",
     conf:1.0,
     flower_colour:"Lilac pink. Large double (17–25 petals); cluster-flowered.",
@@ -1933,6 +2031,7 @@ const T = {
     name:"Vincent Godsiff", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-030",
     conf:1.0,
     flower_colour:"Deep vivid pinky-red; almost luminous quality. Cupped; semi-double. ~2\" across. Single or small clusters.",
@@ -1951,6 +2050,7 @@ const T = {
     name:"Little White Pet", sci:"Rosa — Polyantha Rose",
     genus:"Rosa", species:"Polyantha",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-031",
     conf:1.0,
     flower_colour:"White. Medium; very double; in large clusters; cupped-to-flat form.",
@@ -1969,6 +2069,7 @@ const T = {
     name:"Emmie Grey", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-032",
     conf:1.0,
     flower_colour:"Pink buds open to single bright pink flowers 1.5\" across; darker towards prominent yellow stamens; deepens to rich crimson with age. Flower closes at night.",
@@ -1987,6 +2088,7 @@ const T = {
     name:"Little White Pet", sci:"Rosa — Polyantha Rose",
     genus:"Rosa", species:"Polyantha",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-033",
     conf:1.0,
     flower_colour:"White. Medium; very double; in large clusters; cupped-to-flat form.",
@@ -2005,6 +2107,7 @@ const T = {
     name:"Emmie Grey", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-034",
     conf:1.0,
     flower_colour:"Pink buds open to single bright pink flowers 1.5\" across; darker towards prominent yellow stamens; deepens to rich crimson with age. Flower closes at night.",
@@ -2023,6 +2126,7 @@ const T = {
     name:"BDA. Windchimes", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-035",
     conf:1.0,
     flower_colour:"Deep pink; white center. Single (4–8 petals); ~1\" diameter; in large clusters.",
@@ -2041,6 +2145,7 @@ const T = {
     name:"Bermuda Kathleen", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-036",
     conf:1.0,
     flower_colour:"Cream-white; ages to deep pink. Single to semi-double.",
@@ -2059,6 +2164,7 @@ const T = {
     name:"BDA. Windchimes", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-037",
     conf:1.0,
     flower_colour:"Deep pink; white center. Single (4–8 petals); ~1\" diameter; in large clusters.",
@@ -2077,6 +2183,7 @@ const T = {
     name:"La Marne", sci:"Rosa — Polyantha Rose",
     genus:"Rosa", species:"Polyantha",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-038",
     conf:1.0,
     flower_colour:"Light pink; salmon-pink edges; ages to lighter. Semi-double (9–16 petals); in large clusters.",
@@ -2095,6 +2202,7 @@ const T = {
     name:"Mrs. Dudley Cross", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-039",
     conf:1.0,
     flower_colour:"Light yellow; pink highlights; crimson highlights; more shaded in autumn. Medium double (17–25 petals). 4.25\" diameter.",
@@ -2113,6 +2221,7 @@ const T = {
     name:"Mrs. Dudley Cross", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-040",
     conf:1.0,
     flower_colour:"Light yellow; pink highlights; crimson highlights; more shaded in autumn. Medium double (17–25 petals). 4.25\" diameter.",
@@ -2131,6 +2240,7 @@ const T = {
     name:"Mrs. B. R. Cant", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-041",
     conf:1.0,
     flower_colour:"Deep pink; lighter shading; silvery center; tan undertones. Large double (17–25 petals); cupped bloom form. Prolific.",
@@ -2149,6 +2259,7 @@ const T = {
     name:"Frances Earl", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-042",
     conf:1.0,
     flower_colour:"White; pink reverse. Pink fading to almost white on outer petals. Average diameter 3\". Double (17–25 petals).",
@@ -2167,6 +2278,7 @@ const T = {
     name:"Mrs. B. R. Cant", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-043",
     conf:1.0,
     flower_colour:"Deep pink; lighter shading; silvery center; tan undertones. Large double (17–25 petals); cupped bloom form. Prolific.",
@@ -2185,6 +2297,7 @@ const T = {
     name:"Mrs. B. R. Cant", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-044",
     conf:1.0,
     flower_colour:"Deep pink; lighter shading; silvery center; tan undertones. Large double (17–25 petals); cupped bloom form. Prolific.",
@@ -2203,6 +2316,7 @@ const T = {
     name:"Mrs. B. R. Cant", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-045",
     conf:1.0,
     flower_colour:"Deep pink; lighter shading; silvery center; tan undertones. Large double (17–25 petals); cupped bloom form. Prolific.",
@@ -2221,6 +2335,7 @@ const T = {
     name:"Archduke Charles", sci:"Rosa — China Rose",
     genus:"Rosa", species:"China",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-046",
     conf:1.0,
     flower_colour:"Opens pale pink; deepens to crimson with age; both colours visible simultaneously. Double (17–25 petals); ~4\" diameter; cupped then flat. Cluster-flowered.",
@@ -2239,6 +2354,7 @@ const T = {
     name:"Lady Waterlow", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-047",
     conf:1.0,
     flower_colour:"Salmon-pink; carmine-pink edges; golden-yellow center. Very large; semi-double (9–16 petals).",
@@ -2257,6 +2373,7 @@ const T = {
     name:"Alister Stella Grey", sci:"Rosa — Noisette Rose",
     genus:"Rosa", species:"Noisette",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-048",
     conf:1.0,
     flower_colour:"Light yellow; yellow highlights; ages to cream. 20–40 petals. 2.25\" diameter. Medium full (26–40 petals); cluster-flowered; in clusters. Long pointed buds.",
@@ -2275,6 +2392,7 @@ const T = {
     name:"Lamarque", sci:"Rosa — Noisette Rose",
     genus:"Rosa", species:"Noisette",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-049",
     conf:1.0,
     flower_colour:"White; yellow undertones; darker centre. Ovoid buds. Large; full (26–40 petals); mostly solitary or small clusters; cupped-to-flat; globular. 4\" diameter.",
@@ -2293,6 +2411,7 @@ const T = {
     name:"White Banksia", sci:"Rosa — Species Rose",
     genus:"Rosa", species:"Species",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-050",
     conf:1.0,
     flower_colour:"White. Small double (17–25 petals); cluster-flowered; rosette form. 0.5\" diameter.",
@@ -2311,6 +2430,7 @@ const T = {
     name:"St. David's", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-051",
     conf:1.0,
     flower_colour:"Believed very similar to China Fabvier — no colour confirmed in source.",
@@ -2329,6 +2449,7 @@ const T = {
     name:"St. David's", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-052",
     conf:1.0,
     flower_colour:"Believed very similar to China Fabvier — no colour confirmed in source.",
@@ -2347,6 +2468,7 @@ const T = {
     name:"St. David's", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-053",
     conf:1.0,
     flower_colour:"Believed very similar to China Fabvier — no colour confirmed in source.",
@@ -2365,6 +2487,7 @@ const T = {
     name:"Spice", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-054",
     conf:1.0,
     flower_colour:"White to light pink. Medium; semi-double to double.",
@@ -2383,6 +2506,7 @@ const T = {
     name:"Spice", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-055",
     conf:1.0,
     flower_colour:"White to light pink. Medium; semi-double to double.",
@@ -2401,6 +2525,7 @@ const T = {
     name:"BDA. Yellow Mutabilis", sci:"Rosa — China Rose",
     genus:"Rosa", species:"China",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-056",
     conf:1.0,
     flower_colour:"Opens lemon-yellow with an orange stripe; individual flowers fade progressively to cream then white. Some buds open pink. Single (4–8 petals). The multi-stage colour change means several distinct colours visible simultaneously on one plant.",
@@ -2419,6 +2544,7 @@ const T = {
     name:"Agrippina", sci:"Rosa — China Rose",
     genus:"Rosa", species:"China",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-057",
     conf:1.0,
     flower_colour:"Cherry-red to crimson; white streaks. Small to medium; very double; borne solitary or in clusters; cupped-to-flat; globular; reflexed. 2.25\" diameter.",
@@ -2437,6 +2563,7 @@ const T = {
     name:"A. Aberfeldy Portuguese Rambler", sci:"Rosa — Climber Rose",
     genus:"Rosa", species:"Climber",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-058",
     conf:1.0,
     flower_colour:"Pink; silvery reverse. Small double (17–25 petals); in large clusters. ~1\" diameter.",
@@ -2455,6 +2582,7 @@ const T = {
     name:"Houston House", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-059",
     conf:1.0,
     flower_colour:"Deep pink. Large; semi-double to double; button-eye; flat bloom form.",
@@ -2473,6 +2601,7 @@ const T = {
     name:"Mme. Berkley", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-060",
     conf:1.0,
     flower_colour:"Salmon-pink, pink centre, violet highlights, outer petals pale violet. Full (26–40 petals), 2.75\" diameter. Sets no fertile hips.",
@@ -2491,6 +2620,7 @@ const T = {
     name:"Smith's Parish", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-061",
     conf:1.0,
     flower_colour:"White; many blooms bear a streak of vivid crimson or deep pink; occasionally half pink half white; sometimes entirely pink or red. Variations visible simultaneously on same bush. Buds pale yellowish-white. Cupped; semi-double. ~2\" diameter.",
@@ -2509,6 +2639,7 @@ const T = {
     name:"Smith's Parish", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-062",
     conf:1.0,
     flower_colour:"White; many blooms bear a streak of vivid crimson or deep pink; occasionally half pink half white; sometimes entirely pink or red. Variations visible simultaneously on same bush. Buds pale yellowish-white. Cupped; semi-double. ~2\" diameter.",
@@ -2527,6 +2658,7 @@ const T = {
     name:"Mutabilis", sci:"Rosa — China Rose",
     genus:"Rosa", species:"China",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-063",
     conf:1.0,
     flower_colour:"Opens yellow; progresses through orange and pink to crimson. Covered with butterflies in full bloom description. 5 petals. 3\" diameter. Single (4–8 petals).",
@@ -2545,6 +2677,7 @@ const T = {
     name:"Archduke Joseph", sci:"Rosa — Tea Rose",
     genus:"Rosa", species:"Tea",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-064",
     conf:1.0,
     flower_colour:"Rose-pink; blue shading; copper centre; lighter edges; ages to crimson. Medium double (17–25 petals); cupped-to-flat. 2.75\" diameter.",
@@ -2563,6 +2696,7 @@ const T = {
     name:"Maitland White", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-065",
     conf:1.0,
     flower_colour:"White or white blend with blush. Medium bloom form.",
@@ -2581,6 +2715,7 @@ const T = {
     name:"Maitland White", sci:"Rosa — Bermuda Mystery Rose",
     genus:"Rosa", species:"Mystery",
     fam:"Rosaceae", status:"Confirmed", collection:"Rose",
+    removed:null, removalReason:null,
     accession:"BBG-ROS-2025-066",
     conf:1.0,
     flower_colour:"White or white blend with blush. Medium bloom form.",
@@ -2599,6 +2734,7 @@ const T = {
     name:"Caranday Palm", sci:"Copernicia alba",
     genus:"Copernicia", species:"alba",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-001",
     conf:1.0,
     leaf:"costapalmate; stiff erect; glaucous rigid segments; petiole unarmed",
@@ -2620,6 +2756,7 @@ const T = {
     name:"Manila Palm", sci:"Adonidia merrillii",
     genus:"Adonidia", species:"merrillii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-002",
     conf:1.0,
     leaf:"pinnate; arching; glossy finely divided; petiole unarmed",
@@ -2641,6 +2778,7 @@ const T = {
     name:"Maya Palm", sci:"Gaussia maya",
     genus:"Gaussia", species:"maya",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-003",
     conf:1.0,
     leaf:"Pinnate; arching-spreading; leaflets held in multiple planes giving a plumose appearance; unarmed",
@@ -2662,6 +2800,7 @@ const T = {
     name:"European Fan Palm", sci:"Chamaerops humilis",
     genus:"Chamaerops", species:"humilis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-004",
     conf:1.0,
     leaf:"palmate; stiff segmented; leathery rigid; petiole strongly spiny",
@@ -2683,6 +2822,7 @@ const T = {
     name:"Blue Latan Palm", sci:"Latania loddigesii",
     genus:"Latania", species:"loddigesii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-005",
     conf:1.0,
     leaf:"palmate (slightly costapalmate); spreading stiff; intensely blue-glaucous thick segments; petiole toothed when young",
@@ -2704,6 +2844,7 @@ const T = {
     name:"Mexican Fan Palm", sci:"Washingtonia robusta",
     genus:"Washingtonia", species:"robusta",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-006",
     conf:1.0,
     leaf:"costapalmate; drooping segment tips; filamentous fibre threads at margins; petiole sharply toothed",
@@ -2725,6 +2866,7 @@ const T = {
     name:"Bermuda Palmetto", sci:"Sabal bermudana",
     genus:"Sabal", species:"bermudana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-007",
     conf:1.0,
     leaf:"costapalmate; stiff deeply divided; green rigid segments; petiole unarmed",
@@ -2746,6 +2888,7 @@ const T = {
     name:"Chinese Fan Palm", sci:"Livistona chinensis",
     genus:"Livistona", species:"chinensis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-008",
     conf:1.0,
     leaf:"costapalmate; deeply drooping segment tips; glossy green; petiole small curved spines",
@@ -2767,6 +2910,7 @@ const T = {
     name:"Sugar Date Palm", sci:"Phoenix sylvestris",
     genus:"Phoenix", species:"sylvestris",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-009",
     conf:1.0,
     leaf:"Pinnate; stiff; numerous grey-green leaflets; basal leaflets modified into sharp acanthophylls; petiole armed",
@@ -2788,6 +2932,7 @@ const T = {
     name:"European Fan Palm", sci:"Chamaerops humilis",
     genus:"Chamaerops", species:"humilis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-010",
     conf:1.0,
     leaf:"palmate; stiff segmented; leathery rigid; petiole strongly spiny",
@@ -2809,6 +2954,7 @@ const T = {
     name:"Thurston's Fan Palm", sci:"Pritchardia thurstonii",
     genus:"Pritchardia", species:"thurstonii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-011",
     conf:1.0,
     leaf:"entire palmate (undivided); circular pleated fan; glossy; petiole unarmed",
@@ -2830,6 +2976,7 @@ const T = {
     name:"Florida Thatch Palm", sci:"Thrinax radiata",
     genus:"Thrinax", species:"radiata",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-012",
     conf:1.0,
     leaf:"palmate; flat stiff segments; bright green with paler undersides; petiole unarmed",
@@ -2851,6 +2998,7 @@ const T = {
     name:"Princess Palm", sci:"Dictyosperma album",
     genus:"Dictyosperma", species:"album",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-013",
     conf:1.0,
     leaf:"pinnate; arching; finely divided; petiole unarmed; wind-resistant — leaflets fold rather than tear",
@@ -2872,6 +3020,7 @@ const T = {
     name:"Chinese Fan Palm", sci:"Livistona chinensis",
     genus:"Livistona", species:"chinensis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-014",
     conf:1.0,
     leaf:"costapalmate; deeply drooping segment tips; glossy green; petiole small curved spines",
@@ -2893,6 +3042,7 @@ const T = {
     name:"Pygmy Date Palm", sci:"Phoenix roebelenii",
     genus:"Phoenix", species:"roebelenii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-015",
     conf:1.0,
     leaf:"pinnate; arching soft fronds; fine drooping leaflets; basal leaflets modified into sharp acanthophylls",
@@ -2914,6 +3064,7 @@ const T = {
     name:"Pygmy Date Palm", sci:"Phoenix roebelenii",
     genus:"Phoenix", species:"roebelenii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-016",
     conf:1.0,
     leaf:"pinnate; arching soft fronds; fine drooping leaflets; basal leaflets modified into sharp acanthophylls",
@@ -2935,6 +3086,7 @@ const T = {
     name:"Pygmy Date Palm", sci:"Phoenix roebelenii",
     genus:"Phoenix", species:"roebelenii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-017",
     conf:1.0,
     leaf:"pinnate; arching soft fronds; fine drooping leaflets; basal leaflets modified into sharp acanthophylls",
@@ -2956,6 +3108,7 @@ const T = {
     name:"Pygmy Date Palm", sci:"Phoenix roebelenii",
     genus:"Phoenix", species:"roebelenii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-018",
     conf:1.0,
     leaf:"pinnate; arching soft fronds; fine drooping leaflets; basal leaflets modified into sharp acanthophylls",
@@ -2977,6 +3130,7 @@ const T = {
     name:"Lady Palm", sci:"Rhapis excelsa",
     genus:"Rhapis", species:"excelsa",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-019",
     conf:1.0,
     leaf:"palmate with blunt-tipped segmented finger-like leaflets; glossy green; petiole unarmed",
@@ -2998,6 +3152,7 @@ const T = {
     name:"Bermuda Palmetto", sci:"Sabal bermudana",
     genus:"Sabal", species:"bermudana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-020",
     conf:1.0,
     leaf:"costapalmate; stiff deeply divided; green rigid segments; petiole unarmed",
@@ -3019,6 +3174,7 @@ const T = {
     name:"Wine Palm", sci:"Butia odorata",
     genus:"Butia", species:"odorata",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-021",
     conf:1.0,
     leaf:"Pinnate; strongly arching to recurving; blue-grey-green; leaflets twisted and held in multiple planes; petiole margins armed with teeth",
@@ -3040,6 +3196,7 @@ const T = {
     name:"Rio Grande Palmetto", sci:"Sabal mexicana",
     genus:"Sabal", species:"mexicana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-022",
     conf:1.0,
     leaf:"Costapalmate; large stiff fan; deeply divided segments; green; petiole unarmed; costa curves the fan blade",
@@ -3061,6 +3218,7 @@ const T = {
     name:"Footstool Palm", sci:"Saribus rotundifolia",
     genus:"Saribus", species:"rotundifolia",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-023",
     conf:1.0,
     leaf:"Costapalmate; nearly circular (orbicular); deeply divided; glossy bright green; drooping segment tips; petiole with small curved spines",
@@ -3082,6 +3240,7 @@ const T = {
     name:"Bermuda Palmetto", sci:"Sabal bermudana",
     genus:"Sabal", species:"bermudana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-024",
     conf:1.0,
     leaf:"costapalmate; stiff deeply divided; green rigid segments; petiole unarmed",
@@ -3103,6 +3262,7 @@ const T = {
     name:"Red Latan Palm", sci:"Latania lontaroides",
     genus:"Latania", species:"lontaroides",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-025",
     conf:1.0,
     leaf:"palmate; spreading stiff; red-tinged petiole and rachis when young, maturing green-grey",
@@ -3124,6 +3284,7 @@ const T = {
     name:"Coconut Palm", sci:"Cocos nucifera",
     genus:"Cocos", species:"nucifera",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-026",
     conf:1.0,
     leaf:"pinnate; long arching; narrow leaflets; petiole unarmed",
@@ -3145,6 +3306,7 @@ const T = {
     name:"Chinese Fan Palm", sci:"Livistona chinensis",
     genus:"Livistona", species:"chinensis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-027",
     conf:1.0,
     leaf:"costapalmate; deeply drooping segment tips; glossy green; petiole small curved spines",
@@ -3166,6 +3328,7 @@ const T = {
     name:"Everglades Palm", sci:"Acoelorrhaphe wrightii",
     genus:"Acoelorrhaphe", species:"wrightii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-028",
     conf:1.0,
     leaf:"palmate; medium-sized fan; green-silver bicoloured; petiole armed with strong orange-yellow recurved teeth",
@@ -3187,6 +3350,7 @@ const T = {
     name:"Silver Thatch Palm", sci:"Coccothrinax barbadensis",
     genus:"Coccothrinax", species:"barbadensis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-029",
     conf:1.0,
     leaf:"Palmate; deeply divided; bright green upper surface; distinctly silvery-white underside — diagnostic; segments rigid; petiole unarmed",
@@ -3208,6 +3372,7 @@ const T = {
     name:"Bottle Palm", sci:"Hyophorbe lagenicaulis",
     genus:"Hyophorbe", species:"lagenicaulis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-030",
     conf:1.0,
     leaf:"pinnate; arching sparse fronds; stiff leaflets; petiole unarmed",
@@ -3229,6 +3394,7 @@ const T = {
     name:"Bottle Palm", sci:"Hyophorbe lagenicaulis",
     genus:"Hyophorbe", species:"lagenicaulis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-031",
     conf:1.0,
     leaf:"pinnate; arching sparse fronds; stiff leaflets; petiole unarmed",
@@ -3250,6 +3416,7 @@ const T = {
     name:"Florida Thatch Palm", sci:"Thrinax radiata",
     genus:"Thrinax", species:"radiata",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-032",
     conf:1.0,
     leaf:"palmate; flat stiff segments; bright green with paler undersides; petiole unarmed",
@@ -3271,6 +3438,7 @@ const T = {
     name:"Rio Grande Palmetto", sci:"Sabal mexicana",
     genus:"Sabal", species:"mexicana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-033",
     conf:1.0,
     leaf:"Costapalmate; large stiff fan; deeply divided segments; green; petiole unarmed; costa curves the fan blade",
@@ -3292,6 +3460,7 @@ const T = {
     name:"Canary Island Date Palm", sci:"Phoenix canariensis",
     genus:"Phoenix", species:"canariensis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-034",
     conf:1.0,
     leaf:"pinnate; rigid massive fronds; dense leaflets; basal acanthophylls (modified leaflets); petiole armed",
@@ -3313,6 +3482,7 @@ const T = {
     name:"Yellow Latan Palm", sci:"Latania verschaffeltii",
     genus:"Latania", species:"verschaffeltii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-035",
     conf:1.0,
     leaf:"palmate; spreading; yellow-tinged petiole and rachis when young",
@@ -3334,6 +3504,7 @@ const T = {
     name:"Yellow Latan Palm", sci:"Latania verschaffeltii",
     genus:"Latania", species:"verschaffeltii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-036",
     conf:1.0,
     leaf:"palmate; spreading; yellow-tinged petiole and rachis when young",
@@ -3355,6 +3526,7 @@ const T = {
     name:"Spindle Palm", sci:"Hyophorbe verschaffeltii",
     genus:"Hyophorbe", species:"verschaffeltii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-037",
     conf:1.0,
     leaf:"pinnate; arching sparse fronds; curved stiff leaflets; petiole unarmed",
@@ -3376,6 +3548,7 @@ const T = {
     name:"Spindle Palm", sci:"Hyophorbe verschaffeltii",
     genus:"Hyophorbe", species:"verschaffeltii",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-038",
     conf:1.0,
     leaf:"pinnate; arching sparse fronds; curved stiff leaflets; petiole unarmed",
@@ -3397,6 +3570,7 @@ const T = {
     name:"Loureiroi Palm", sci:"Phoenix loureiroi var. humilis",
     genus:"Phoenix", species:"loureiroi var. humilis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-039",
     conf:1.0,
     leaf:"Pinnate; arching; relatively short fronds; basal leaflets modified into acanthophylls; grey-green leaflets; petiole armed",
@@ -3418,6 +3592,7 @@ const T = {
     name:"Loureiroi Palm", sci:"Phoenix loureiroi var. humilis",
     genus:"Phoenix", species:"loureiroi var. humilis",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-040",
     conf:1.0,
     leaf:"Pinnate; arching; relatively short fronds; basal leaflets modified into acanthophylls; grey-green leaflets; petiole armed",
@@ -3439,6 +3614,7 @@ const T = {
     name:"Dwarf Palmetto", sci:"Sabal minor",
     genus:"Sabal", species:"minor",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-041",
     conf:1.0,
     leaf:"costapalmate; rigid segments; blue-green stiff; petiole unarmed",
@@ -3460,6 +3636,7 @@ const T = {
     name:"Rio Grande Palmetto", sci:"Sabal mexicana",
     genus:"Sabal", species:"mexicana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-042",
     conf:1.0,
     leaf:"Costapalmate; large stiff fan; deeply divided segments; green; petiole unarmed; costa curves the fan blade",
@@ -3481,6 +3658,7 @@ const T = {
     name:"Rio Grande Palmetto", sci:"Sabal mexicana",
     genus:"Sabal", species:"mexicana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-043",
     conf:1.0,
     leaf:"Costapalmate; large stiff fan; deeply divided segments; green; petiole unarmed; costa curves the fan blade",
@@ -3502,6 +3680,7 @@ const T = {
     name:"Rio Grande Palmetto", sci:"Sabal mexicana",
     genus:"Sabal", species:"mexicana",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-044",
     conf:1.0,
     leaf:"Costapalmate; large stiff fan; deeply divided segments; green; petiole unarmed; costa curves the fan blade",
@@ -3523,6 +3702,7 @@ const T = {
     name:"Royal Palm", sci:"Roystonea regia",
     genus:"Roystonea", species:"regia",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-045",
     conf:1.0,
     leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
@@ -3544,6 +3724,7 @@ const T = {
     name:"Royal Palm", sci:"Roystonea regia",
     genus:"Roystonea", species:"regia",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-046",
     conf:1.0,
     leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
@@ -3565,6 +3746,7 @@ const T = {
     name:"Royal Palm", sci:"Roystonea regia",
     genus:"Roystonea", species:"regia",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-047",
     conf:1.0,
     leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
@@ -3586,6 +3768,7 @@ const T = {
     name:"Royal Palm", sci:"Roystonea regia",
     genus:"Roystonea", species:"regia",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-048",
     conf:1.0,
     leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
@@ -3607,6 +3790,7 @@ const T = {
     name:"Royal Palm", sci:"Roystonea regia",
     genus:"Roystonea", species:"regia",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-049",
     conf:1.0,
     leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
@@ -3628,6 +3812,7 @@ const T = {
     name:"Royal Palm", sci:"Roystonea regia",
     genus:"Roystonea", species:"regia",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-050",
     conf:1.0,
     leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
@@ -3649,6 +3834,7 @@ const T = {
     name:"Royal Palm", sci:"Roystonea regia",
     genus:"Roystonea", species:"regia",
     fam:"Arecaceae", status:"Confirmed", collection:"Palm",
+    removed:null, removalReason:null,
     accession:"BBG-PAL-2023-051",
     conf:1.0,
     leaf:"pinnate; long plumose fronds, leaflets in multiple planes giving feathery appearance; smooth even leaflets; petiole unarmed",
@@ -3670,6 +3856,7 @@ const T = {
     name:"Giant Leaved Fig", sci:"Ficus lutea",
     genus:"Ficus", species:"lutea",
     fam:"Moraceae", status:"Confirmed", collection:"Ficus",
+    removed:null, removalReason:null,
     accession:"BBG-FIC-2026-001",
     conf:1.0,
     foliage:"Very large — to 43cm; broadly ovate-elliptic; glossy; leathery; pale yellow midrib and veins; 6–8 pairs of lateral veins; clustered at branch ends; long petioles; coppery new growth",
@@ -3688,6 +3875,7 @@ const T = {
     name:"Rubber Tree", sci:"Ficus elastica",
     genus:"Ficus", species:"elastica",
     fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    removed:null, removalReason:null,
     accession:"BBG-FIC-2026-002",
     conf:0.8,
     foliage:"Large, thick, glossy oblong; bold pale midrib; fine parallel veins; red leaf sheath",
@@ -3706,6 +3894,7 @@ const T = {
     name:"Indian Banyan", sci:"Ficus benghalensis",
     genus:"Ficus", species:"benghalensis",
     fam:"Moraceae", status:"Confirmed", collection:"Ficus",
+    removed:null, removalReason:null,
     accession:"BBG-FIC-2026-003",
     conf:1.0,
     foliage:"Large, broadly ovate, leathery; bold veins; rusty-haired underside",
@@ -3724,6 +3913,7 @@ const T = {
     name:"Variegated Rubber Tree", sci:"Ficus elastica 'Tineke'",
     genus:"Ficus", species:"elastica 'Tineke'",
     fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    removed:null, removalReason:null,
     accession:"BBG-FIC-2026-004",
     conf:0.8,
     foliage:"Large, thick, glossy oblong; bold pale midrib; fine parallel veins. Variegated: green centre, cream margins; pink new growth",
@@ -3742,6 +3932,7 @@ const T = {
     name:"Peepul / Sacred Fig", sci:"Ficus religiosa",
     genus:"Ficus", species:"religiosa",
     fam:"Moraceae", status:"Confirmed", collection:"Ficus",
+    removed:null, removalReason:null,
     accession:"BBG-FIC-2026-005",
     conf:1.0,
     foliage:"Heart-shaped with a long tapering drip-tip (up to half the blade length) — diagnostic; glossy; leathery; 10–17cm; coppery-pink new growth; long flexible petiole makes leaves flutter",
@@ -3760,6 +3951,7 @@ const T = {
     name:"Peepul / Sacred Fig", sci:"Ficus religiosa",
     genus:"Ficus", species:"religiosa",
     fam:"Moraceae", status:"Confirmed", collection:"Ficus",
+    removed:null, removalReason:null,
     accession:"BBG-FIC-2026-006",
     conf:1.0,
     foliage:"Heart-shaped with a long tapering drip-tip (up to half the blade length) — diagnostic; glossy; leathery; 10–17cm; coppery-pink new growth; long flexible petiole makes leaves flutter",
@@ -3778,6 +3970,7 @@ const T = {
     name:"Chinese Banyan / Indian Laurel", sci:"Ficus microcarpa",
     genus:"Ficus", species:"microcarpa",
     fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    removed:null, removalReason:null,
     accession:"BBG-FIC-2026-007",
     conf:0.6,
     foliage:"Elliptic to obovate; blunt or shortly pointed tip (no drip-tail); glossy dark green; leathery; 4–10cm; dense uniform canopy; short petiole",
@@ -3796,6 +3989,7 @@ const T = {
     name:"Rock Fig / Petiolate Fig", sci:"Ficus petiolaris",
     genus:"Ficus", species:"petiolaris",
     fam:"Moraceae", status:"Tentative", collection:"Ficus",
+    removed:null, removalReason:null,
     accession:"BBG-FIC-2026-008",
     conf:0.6,
     foliage:"Heart-shaped (cordate to cordate-orbicular); 7–12cm; pale to glaucous green above; distinctive scarlet or purple veins and long reddish petioles; tufts of white hairs in the vein axils beneath — diagnostic; velvety texture; evergreen but drought-deciduous",
@@ -3835,8 +4029,8 @@ recomputeStats();
 // Centred on Bermuda Botanical Gardens, 169 South Road, Paget Parish, Bermuda
 const map = L.map('map', {zoomControl: true}).setView([32.293470, -64.762235], 18);
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   maxZoom: 21,
   maxNativeZoom: 19
 }).addTo(map);
@@ -3982,25 +4176,36 @@ function dispId(id) {
 }
 
 // ── MARKER ICON ───────────────────────────────────────────────────────────────
+// A specimen counts as removed/deceased once it has a Date Removed value.
+function isRemoved(t){ return !!(t && t.removed && String(t.removed).trim()); }
+
 function makeIcon(id, genus, status, selected) {
-  const gc = GCOL[genus] || '#999';
+  const t = T[parseInt(id)];
+  const removed = isRemoved(t);
+  const gc = removed ? '#9AA0A6' : (GCOL[genus] || '#999');
   const sc = SCOLS[status] || '#888';
-  const isRose = T[parseInt(id)]?.collection === 'Rose';
+  const isRose = t?.collection === 'Rose';
   // Roses: tight outer ring (ro≈ri+1.5) so it reads as a coloured outline, not a wide band
   const ro = isRose ? (selected ? 10 : 7)  : (selected ? 14 : 12);
   const sw = isRose ? (selected ? 2 : 1.5) : (selected ? 3.5 : 2.5);
   const ri = isRose ? (selected ? 7 : 5.5) : 8;
   const dim = (ro + 3) * 2;
   const c = ro + 3;
+  // Removed: hollow, dashed, greyed and faded so it reads as a ghost of the tree
+  const dash       = removed ? ' stroke-dasharray="3,2"' : '';
+  const innerFill  = removed ? 'none' : sc;
+  const innerExtra = removed ? ' stroke="#9AA0A6" stroke-width="1.5" stroke-dasharray="2.5,2"' : '';
+  const textFill   = removed ? '#6b7075' : 'white';
+  const gOpacity   = removed ? 0.72 : 1;
   return L.divIcon({
     className: '',
     html: `<svg width="${dim}" height="${dim}" viewBox="0 0 ${dim} ${dim}" xmlns="http://www.w3.org/2000/svg">
-      <g role="button" tabindex="0" aria-label="Specimen ${dispId(id)}"
+      <g role="button" tabindex="0" aria-label="Specimen ${dispId(id)}${removed ? ' (removed)' : ''}" opacity="${gOpacity}"
          onkeydown="if(event.key==='Enter'||event.key===' '){this.closest('svg').parentElement.click();event.preventDefault()}">
-        <circle cx="${c}" cy="${c}" r="${ro}" fill="none" stroke="${gc}" stroke-width="${sw}" opacity="0.9"/>
-        <circle cx="${c}" cy="${c}" r="${ri}" fill="${sc}"/>
+        <circle cx="${c}" cy="${c}" r="${ro}" fill="none" stroke="${gc}" stroke-width="${sw}" opacity="0.9"${dash}/>
+        <circle cx="${c}" cy="${c}" r="${ri}" fill="${innerFill}"${innerExtra}/>
         <text x="${c}" y="${c}" text-anchor="middle" dy="3.5" font-size="8"
-              fill="white" font-weight="600" font-family="system-ui,sans-serif">${dispId(id)}</text>
+              fill="${textFill}" font-weight="600" font-family="system-ui,sans-serif">${dispId(id)}</text>
       </g>
     </svg>`,
     iconSize:   [dim, dim],
@@ -4015,16 +4220,218 @@ let currentId = null;
 const treeIds = Object.keys(T).map(Number).sort((a,b)=>a-b);
 const markers = {};
 
+// ── MOVE (drag to reposition) ─────────────────────────────────────────────────
+// The sheet is read-only, so dragging a marker is a LOCAL override saved to
+// localStorage; the panel shows the new coordinates to copy into the Excel file.
+// Once the sheet is updated and re-synced to match, the override clears itself.
+// Markers are draggable only in Move mode, which is hidden on the public embed.
+let moveMode = false;
+const MOVE_EPS = 1e-6;   // ~0.1 m: positions this close are treated as identical
+
+// ── REMOVED / DECEASED ────────────────────────────────────────────────────────
+// Specimens with a Date Removed are hidden by default and revealed, as faded
+// hollow markers, by the Removed toggle. They stay in the sheet as history.
+let showRemoved = false;
+function toggleRemoved(){
+  showRemoved = !showRemoved;
+  document.getElementById('removedbtn').classList.toggle('active', showRemoved);
+  try { localStorage.setItem('conifers_removed', showRemoved ? '1' : '0'); } catch(e){}
+  applyFilters();
+}
+
+function readMoved(){ try { return JSON.parse(localStorage.getItem('conifers_moved')) || {}; } catch(e){ return {}; } }
+function writeMoved(ov){ try { localStorage.setItem('conifers_moved', JSON.stringify(ov)); } catch(e){} }
+
+function loadMovedPlants(){
+  const ov = readMoved(); let changed = false;
+  const CHANGED_EPS = 1e-7;   // any real sheet edit shifts the value by more than this
+  Object.keys(ov).forEach(id => {
+    const t = T[id], pos = ov[id];
+    if (!t || t.addedViaMap){ delete ov[id]; changed = true; return; }   // sheet specimens only
+    // Drop the override once the sheet coordinate has been updated — detected either
+    // by the sheet value moving away from the drag-time origin, or now matching the
+    // dragged-to position. Robust to however precisely the coords were entered.
+    const hasOrigin   = pos.fromLat !== undefined && pos.fromLng !== undefined;
+    const sheetEdited = hasOrigin &&
+      (Math.abs(t.lat-pos.fromLat) > CHANGED_EPS || Math.abs(t.lng-pos.fromLng) > CHANGED_EPS);
+    const sheetMatches = Math.abs(t.lat-pos.lat) < MOVE_EPS && Math.abs(t.lng-pos.lng) < MOVE_EPS;
+    if (sheetEdited || sheetMatches){ delete ov[id]; changed = true; return; }
+    t.origLat = t.lat; t.origLng = t.lng;      // remember the (still-unchanged) sheet position
+    t.lat = pos.lat; t.lng = pos.lng; t.moved = true;
+  });
+  if (changed) writeMoved(ov);
+}
+
+function movedTrees(){ return Object.values(T).filter(t => t.moved && !t.addedViaMap); }
+
+function updateExportBtn(){
+  const any = Object.values(T).some(t => t.addedViaMap) || movedTrees().length > 0;
+  document.getElementById('exportbtn').style.display = any ? '' : 'none';
+}
+
+function onMarkerDragEnd(id, m){
+  const ll = m.getLatLng(), t = T[id];
+  if (!t) return;
+  if (t.addedViaMap){
+    t.lat = ll.lat; t.lng = ll.lng;
+    saveAddedTrees();
+  } else {
+    if (!t.moved){ t.origLat = t.lat; t.origLng = t.lng; }   // capture sheet origin on first move
+    t.lat = ll.lat; t.lng = ll.lng;
+    const ov = readMoved();
+    if (Math.abs(t.lat-t.origLat) < MOVE_EPS && Math.abs(t.lng-t.origLng) < MOVE_EPS){
+      t.moved = false; delete t.origLat; delete t.origLng; delete ov[id];   // dragged back home
+    } else {
+      t.moved = true; ov[id] = {lat:t.lat, lng:t.lng, fromLat:t.origLat, fromLng:t.origLng};
+    }
+    writeMoved(ov);
+  }
+  updateExportBtn();
+  if (labelState) declutterLabels();
+  if (currentId === id) showPanel(id, m);   // refresh the coordinate box
+}
+
+function resetMarkerPosition(id){
+  const t = T[id];
+  if (!t || !t.moved) return;
+  t.lat = t.origLat; t.lng = t.origLng;
+  t.moved = false; delete t.origLat; delete t.origLng;
+  const ov = readMoved(); delete ov[id]; writeMoved(ov);
+  updateExportBtn();
+  if (markers[id]) markers[id].setLatLng([t.lat, t.lng]);
+  if (labelState) declutterLabels();
+  showPanel(id, markers[id]);
+}
+
+// Enabled only in Move mode. markercluster re-adds markers (with draggable:true) as
+// you zoom past the cluster threshold, so re-sync the drag state on those events too.
+function applyMoveMode(){
+  Object.values(markers).forEach(m => { if (m.dragging) (moveMode ? m.dragging.enable() : m.dragging.disable()); });
+}
+
+function setMoveMode(on){
+  moveMode = on;
+  document.getElementById('movebtn').classList.toggle('active', on);
+  document.getElementById('movebanner').style.display = on ? 'block' : 'none';
+  map.getContainer().style.cursor = on ? 'move' : '';
+  applyMoveMode();
+}
+
+function toggleMove(){
+  if (!moveMode && addMode) exitAddMode();   // the two edit modes are mutually exclusive
+  setMoveMode(!moveMode);
+}
+
+loadMovedPlants();   // apply saved position overrides before markers are built
+
 Object.entries(T).forEach(([id, t]) => {
-  const m = L.marker([t.lat, t.lng], {icon: makeIcon(id, t.genus, t.status, false)})
+  const m = L.marker([t.lat, t.lng], {icon: makeIcon(id, t.genus, t.status, false), draggable: true})
     .addTo(clusterGroup)
     .bindTooltip(
       `<strong>#${dispId(id)} ${t.name}</strong><br><em>${t.sci}</em>`,
       {direction:'right', offset:[10,0], opacity:0.95}
     );
   m.on('click', () => showPanel(parseInt(id), m));
+  m.on('dragend', () => onMarkerDragEnd(parseInt(id), m));
+  if (m.dragging) m.dragging.disable();   // off until Move mode is turned on
   markers[id] = m;
 });
+
+// ── MAP LABELS ────────────────────────────────────────────────────────────────
+// Genus abbreviations for the on-map labels ONLY. Panel, list view and hover
+// tooltip always show the full genus. Kept unambiguous within this collection
+// (many C- and P- genera here, so no single-letter forms). Edit freely.
+const GENUS_ABBR = {
+  Juniperus:'Junip.', Platycladus:'Platy.', Chamaerops:'Cham.',
+  Acoelorrhaphe:'Acoel.', Coccothrinax:'Coccoth.', Copernicia:'Copern.',
+  Dictyosperma:'Dictyo.', Pritchardia:'Pritch.', Washingtonia:'Wash.'
+};
+
+// 0 = off (hover tooltips) · 1 = tidied (decluttered labels) · 2 = all labels
+let labelState = 0;
+try { labelState = parseInt(localStorage.getItem('bbg_labels')) || 0; } catch(e){}
+
+// Cultivar in roman type inside single quotes (breaks out of the italic sci name)
+function cvHtml(t){
+  return t.cultivar ? ` <span style="font-style:normal">&lsquo;${t.cultivar}&rsquo;</span>` : '';
+}
+
+function hoverTipHtml(id){
+  const t = T[id];
+  return t.addedViaMap
+    ? `<strong>#${dispId(id)} ${t.name||''}</strong><br><em>Added ${t.addedDate} — update Excel</em>`
+    : `<strong>#${dispId(id)} ${t.name||''}</strong>${t.sci?`<br><em>${t.sci}</em>${cvHtml(t)}`:''}`;
+}
+
+// Compact on-map label: genus (abbreviated) + species italic, cultivar roman
+function labelHtml(id){
+  const t = T[id];
+  const g = GENUS_ABBR[t.genus] || t.genus || '';
+  const sci = [g, t.species].filter(Boolean).join(' ');
+  return sci ? `<em>${sci}</em>${cvHtml(t)}` : (t.name || `#${dispId(id)}`);
+}
+
+function bindMarkerTip(m, id){
+  m.unbindTooltip();
+  if (labelState === 0){
+    m.bindTooltip(hoverTipHtml(id), {direction:'right', offset:[10,0], opacity:0.95});
+  } else {
+    m.bindTooltip(labelHtml(id), {permanent:true, direction:'right', className:'mlabel', opacity:1});
+  }
+}
+
+function refreshAllTips(){
+  Object.keys(markers).forEach(id => { if (T[id]) bindMarkerTip(markers[id], id); });
+  declutterLabels();
+}
+
+// Greedy declutter: walk labels in a stable priority order, hide any overlapping
+// one already placed. Clustered markers have no tooltip element, so they're
+// skipped automatically. Deterministic order → no flicker between renders.
+const LABEL_PAD = 3;
+function labelPriority(id){
+  if (parseInt(id) === currentId) return 3;   // open specimen keeps its label
+  if (T[id] && T[id].addedViaMap)  return 2;   // then map-added, awaiting transfer
+  return 1;
+}
+function labelOrderIds(){
+  return Object.keys(markers).sort((a,b) => labelPriority(b)-labelPriority(a) || (a-b));
+}
+function declutterLabels(){
+  if (labelState === 0) return;
+  const placed = [];
+  const showAll = labelState === 2;
+  for (const id of labelOrderIds()){
+    const m  = markers[id];
+    const tt = m && m.getTooltip && m.getTooltip();
+    const el = tt && tt.getElement();
+    if (!el) continue;                                   // clustered or not rendered
+    if (m.options.opacity !== undefined && m.options.opacity < 1){ el.style.display='none'; continue; } // filtered out → dimmed, hide label
+    if (showAll){ el.style.display=''; continue; }
+    el.style.display = '';                               // must be visible to measure
+    const r = el.getBoundingClientRect();
+    const box = {l:r.left-LABEL_PAD, t:r.top-LABEL_PAD, r:r.right+LABEL_PAD, b:r.bottom+LABEL_PAD};
+    const hit = placed.some(o => !(box.r<o.l || box.l>o.r || box.b<o.t || box.t>o.b));
+    if (hit) el.style.display='none'; else placed.push(box);
+  }
+}
+
+function updateLabelBtn(){
+  const b = document.getElementById('labelbtn');
+  if (!b) return;
+  b.textContent = labelState === 2 ? 'All Names' : 'Names';
+  b.classList.toggle('active', labelState > 0);
+}
+function cycleLabels(){
+  labelState = (labelState + 1) % 3;                     // off → tidied → all → off
+  try { localStorage.setItem('bbg_labels', labelState); } catch(e){}
+  updateLabelBtn();
+  refreshAllTips();
+}
+
+// markercluster re-renders markers on zoom; re-run declutter once it settles
+map.on('zoomend moveend', () => { declutterLabels(); applyMoveMode(); });
+clusterGroup.on('animationend', () => { declutterLabels(); applyMoveMode(); });
 
 // ── DATE UTILITIES ────────────────────────────────────────────────────────────
 function parseObsDate(s) {
@@ -4061,12 +4468,26 @@ function showPanel(id, marker) {
   pname.textContent = `#${dispId(id)} \u2014 ${t.name}`;
   pname.classList.remove('placeholder');
   const sci = document.getElementById('psci');
-  sci.textContent = t.sci; sci.classList.remove('placeholder');
+  sci.innerHTML = `${t.sci||''}${cvHtml(t)}`; sci.classList.remove('placeholder');
 
-  document.getElementById('pfam').textContent = t.fam;
-  document.getElementById('pgen').textContent = t.genus;
+  const premoved = document.getElementById('premoved');
+  if (isRemoved(t)) {
+    premoved.innerHTML = `✝ Removed${t.removed ? ' ' + t.removed : ''}${t.removalReason ? ' — ' + t.removalReason : ''}`;
+    premoved.style.display = 'block';
+  } else {
+    premoved.style.display = 'none';
+  }
+
+  // Identity rows always render; a blank shows a muted "—" as a to-do prompt
+  const idCell = (cid, val) => {
+    const el = document.getElementById(cid);
+    el.textContent = val || '—';
+    el.classList.toggle('blank', !val);
+  };
+  idCell('pfam', t.fam);
+  idCell('pgen', t.genus);
   document.getElementById('pspe-lbl').textContent = t.collection === 'Rose' ? 'Classification' : 'Species';
-  document.getElementById('pspe').textContent = t.species;
+  idCell('pspe', t.species);
 
   const sr = (rid, cid, val) => {
     document.getElementById(rid).style.display = val ? '' : 'none';
@@ -4076,6 +4497,7 @@ function showPanel(id, marker) {
     document.getElementById(rid).style.display = '';
     document.getElementById(cid).textContent = val || '—';
   };
+  sr('rcultivar', 'pcultivar', t.cultivar);   // conifer cultivars; shown only when present
 
   const isRose  = t.collection === 'Rose';
   const isPalm  = t.collection === 'Palm';
@@ -4157,7 +4579,9 @@ function showPanel(id, marker) {
 
   const pct = t.conf !== null ? Math.round(t.conf * 100) : null;
   const sym = SSYM[t.status] || '';
-  document.getElementById('pclbl').textContent = pct !== null ? `${sym} ${t.status} · Confidence: ${pct}%` : `${sym} ${t.status}`;
+  document.getElementById('pclbl').textContent = pct !== null
+    ? `${sym} ${t.status} · Confidence: ${pct}%`
+    : `${sym} ${t.status} · Confidence: not assessed`;
   document.getElementById('pcfill').style.cssText = `width:${pct||0}%;background:${SCOLS[t.status]}`;
 
   // Build lightbox list: main 3 slots + extra photos
@@ -4218,8 +4642,9 @@ function showPanel(id, marker) {
   t.link ? (lk.href = t.link, lk.textContent = 'More information \u2192', lk.style.display = 'block') : (lk.style.display = 'none');
 
   const pgps = document.getElementById('pgps');
-  if (t.addedViaMap) {
-    pgps.textContent = `GPS: ${t.lat.toFixed(6)}, ${t.lng.toFixed(6)}`;
+  if (t.addedViaMap || t.moved) {
+    // Click-to-select coordinates for copying straight into the Excel file
+    pgps.innerHTML = `📍 Lat <code>${(+t.lat).toFixed(7)}</code> Lng <code>${(+t.lng).toFixed(7)}</code>`;
     pgps.style.display = 'block';
   } else {
     pgps.style.display = 'none';
@@ -4230,6 +4655,10 @@ function showPanel(id, marker) {
     ef.innerHTML = `Added via map on ${t.addedDate}.<br><strong>Update Excel file with field notes for this specimen.</strong>
       <button onclick="removeAddedTree(${id})" style="margin-top:7px;width:100%;padding:5px;font-size:11px;cursor:pointer;border-radius:6px;border:1px solid #e8a87c;background:#fff3ed;color:#7a2e00">Remove this marker</button>`;
     ef.style.display = 'block';
+  } else if (t.moved) {
+    ef.innerHTML = `↔ Moved on the map.<br><strong>Copy the new coordinates into the Excel file.</strong>
+      <button onclick="resetMarkerPosition(${id})" style="margin-top:7px;width:100%;padding:5px;font-size:11px;cursor:pointer;border-radius:6px;border:1px solid #b7c4a8;background:#f4f7f2;color:#33402c">Reset position</button>`;
+    ef.style.display = 'block';
   } else {
     ef.style.display = 'none';
   }
@@ -4238,6 +4667,7 @@ function showPanel(id, marker) {
 
   // Nav arrows
   currentId = id;
+  if (labelState) declutterLabels();   // selected specimen outranks other labels
   const _navIds = navIds();
   const idx = _navIds.indexOf(id);
   const prevId = _navIds[(idx - 1 + _navIds.length) % _navIds.length];
@@ -4325,7 +4755,7 @@ function rebuildPrintGrid() {
     if (statusChecked.length && !statusChecked.includes(t.status))    return false;
     if (genusChecked.length  && !genusChecked.includes(t.genus))      return false;
     if (specChecked.length   && !specChecked.includes(t.species))     return false;
-    if (q && !`${id} ${t.name} ${t.genus} ${t.species} ${t.sci}`.toLowerCase().includes(q)) return false;
+    if (q && !`${id} ${t.name} ${t.genus} ${t.species} ${t.cultivar||''} ${t.sci}`.toLowerCase().includes(q)) return false;
     return true;
   });
   document.getElementById('pt-grid').innerHTML = filtered.map(([id]) => buildPrintCard(id)).join('');
@@ -4384,12 +4814,20 @@ function openPrint() {
   // Mirror active map collection filter into print view
   const collections = [...new Set(Object.values(T).map(t => t.collection).filter(Boolean))].sort();
   const collDdWrap  = document.getElementById('lvcoll-dd-wrap');
+  // On the website embed the collection is locked via the ?collection= URL param.
+  // Honour that lock even when the map's filters have been cleared, so List View
+  // stays within the locked collection instead of falling back to all of them.
+  const lockColl  = _activeCollection();
+  const lockValid = lockColl && collections.includes(lockColl);
   const mapCollChecked = [...document.querySelectorAll('.fcoll:checked')].map(el => el.value);
   if (collections.length > 1) {
     document.getElementById('lvdd-coll').innerHTML =
-      collections.map(c => `<label><input type="checkbox" class="lvcoll" value="${c}" onchange="rebuildLvTaxons();rebuildPrintGrid()"${mapCollChecked.includes(c) ? ' checked' : ''}> ${c} Collection</label>`).join('');
+      collections.map(c => {
+        const checked = lockValid ? (c === lockColl) : mapCollChecked.includes(c);
+        return `<label><input type="checkbox" class="lvcoll" value="${c}" onchange="rebuildLvTaxons();rebuildPrintGrid()"${checked ? ' checked' : ''}> ${c} Collection</label>`;
+      }).join('');
     // Hide collection switcher on website embed — collection is locked via URL param
-    collDdWrap.style.display = _activeCollection() ? 'none' : '';
+    collDdWrap.style.display = lockColl ? 'none' : '';
   } else {
     collDdWrap.style.display = 'none';
   }
@@ -4500,8 +4938,7 @@ function updateSpecimenCount() {
     ? Object.values(T).filter(t => t.collection === key).length
     : Object.keys(T).length;
   document.getElementById('speccount').textContent = count;
-  const hasAdded = Object.values(T).some(t => t.addedViaMap);
-  document.getElementById('exportbtn').style.display = hasAdded ? '' : 'none';
+  updateExportBtn();
 }
 
 function toggleAddMode() {
@@ -4509,6 +4946,7 @@ function toggleAddMode() {
   const btn = document.getElementById('addbtn');
   const banner = document.getElementById('addbanner');
   if (addMode) {
+    if (moveMode) setMoveMode(false);   // the two edit modes are mutually exclusive
     btn.classList.add('active');
     btn.textContent = 'Cancel';
     banner.style.display = 'block';
@@ -4563,12 +5001,13 @@ function confirmAdd() {
 
   if (pendingMarker) { map.removeLayer(pendingMarker); pendingMarker = null; }
 
-  const m = L.marker([T[newId].lat, T[newId].lng], {icon: makeIcon(newId, 'Unknown', 'Unknown', false)})
-    .addTo(clusterGroup)
-    .bindTooltip(`<strong>#${newId} ${name}</strong><br><em>Added ${now} — update Excel</em>`,
-      {direction:'right', offset:[10,0], opacity:0.95});
+  const m = L.marker([T[newId].lat, T[newId].lng], {icon: makeIcon(newId, 'Unknown', 'Unknown', false), draggable: true})
+    .addTo(clusterGroup);
   m.on('click', () => showPanel(newId, m));
+  m.on('dragend', () => onMarkerDragEnd(newId, m));
+  if (m.dragging && !moveMode) m.dragging.disable();
   markers[newId] = m;
+  bindMarkerTip(m, newId);
 
   recomputeStats();
   updateSpecimenCount();
@@ -4584,17 +5023,21 @@ function cancelAdd() { exitAddMode(); }
 
 function exportAddedCSV() {
   const added = Object.entries(T).filter(([, t]) => t.addedViaMap);
-  if (!added.length) { alert('No trees have been added via the map yet.'); return; }
+  const moved = Object.entries(T).filter(([, t]) => t.moved && !t.addedViaMap);
+  if (!added.length && !moved.length) { alert('No specimens have been added or moved via the map yet.'); return; }
   const esc = v => `"${(v ?? '').toString().replace(/"/g, '""')}"`;
-  const header = ['Date added','ID','Provisional name','Latitude','Longitude','Notes','Transferred'];
-  const rows = added.map(([id, t]) => [
-    esc(t.addedDate), esc(id), esc(t.name),
-    esc(t.lat), esc(t.lng), esc(t.notes ?? ''), esc('')
-  ]);
-  const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+  // Type marks each row; moved rows carry the original sheet position in Notes.
+  const header = ['Type','Date added','ID','Name','Latitude','Longitude','Notes'];
+  const addedRows = added.map(([id, t]) =>
+    ['Added', t.addedDate ?? '', dispId(id), t.name ?? '', t.lat, t.lng, t.notes ?? '']);
+  const movedRows = moved.map(([id, t]) =>
+    ['Moved', '', dispId(id), (t.sci || t.name || ''), t.lat, t.lng,
+     `Was ${(+t.origLat).toFixed(7)}, ${(+t.origLng).toFixed(7)}`]);
+  const rows = [...addedRows, ...movedRows].map(r => r.map(esc).join(','));
+  const csv = [header.map(esc).join(','), ...rows].join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-  a.download = `conifer_added_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `conifer_map_edits_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 }
 
@@ -4638,12 +5081,13 @@ function loadAddedTrees() {
     if (T[id]) return; // already loaded from sync — sheet data takes priority
     T[id] = tree;
     if (!treeIds.includes(id)) treeIds.push(id);
-    const m = L.marker([tree.lat, tree.lng], {icon: makeIcon(id, 'Unknown', 'Unknown', false)})
-      .addTo(clusterGroup)
-      .bindTooltip(`<strong>#${id} ${tree.name}</strong><br><em>Added ${tree.addedDate} — update Excel</em>`,
-        {direction:'right', offset:[10,0], opacity:0.95});
+    const m = L.marker([tree.lat, tree.lng], {icon: makeIcon(id, 'Unknown', 'Unknown', false), draggable: true})
+      .addTo(clusterGroup);
     m.on('click', () => showPanel(id, m));
+    m.on('dragend', () => onMarkerDragEnd(id, m));
+    if (m.dragging && !moveMode) m.dragging.disable();
     markers[id] = m;
+    bindMarkerTip(m, id);
   });
   treeIds.sort((a,b) => a-b);
   recomputeStats();
@@ -4651,6 +5095,10 @@ function loadAddedTrees() {
 }
 
 loadAddedTrees();
+
+// Restore the saved label state (button + any permanent labels)
+updateLabelBtn();
+if (labelState > 0) refreshAllTips();
 
 Object.values(T).forEach(t => {
   if (!t.firstRecorded) {
@@ -4795,7 +5243,8 @@ function getFilteredIds() {
   const consChecked      = [...document.querySelectorAll('.fconservation:checked')].map(el => el.value);
   return Object.entries(T)
     .filter(([id, t]) => {
-      if (q && !`${id} ${t.name} ${t.genus} ${t.species} ${t.sci}`.toLowerCase().includes(q)) return false;
+      if (isRemoved(t) && !showRemoved) return false;   // removed/deceased hidden unless toggled on
+      if (q && !`${id} ${t.name} ${t.genus} ${t.species} ${t.cultivar||''} ${t.sci}`.toLowerCase().includes(q)) return false;
       if (collChecked.length && !collChecked.includes(t.collection)) return false;
       if (famChecked.length && !famChecked.includes(t.fam)) return false;
       if (genusChecked.length && !genusChecked.includes(t.genus)) return false;
@@ -4814,17 +5263,34 @@ function getFilteredIds() {
 
 function applyFilters() {
   const visible = new Set(getFilteredIds().map(String));
-  Object.entries(markers).forEach(([id, m]) => m.setOpacity(visible.has(String(id)) ? 1 : 0.15));
+  Object.entries(markers).forEach(([id, m]) => {
+    // Removed specimens are pulled out of the map entirely unless the toggle is on;
+    // everything else is dimmed rather than hidden.
+    if (isRemoved(T[id]) && !showRemoved) {
+      if (clusterGroup.hasLayer(m)) clusterGroup.removeLayer(m);
+    } else {
+      if (!clusterGroup.hasLayer(m)) clusterGroup.addLayer(m);
+      m.setOpacity(visible.has(String(id)) ? 1 : 0.15);
+    }
+  });
   const collChecked = [...document.querySelectorAll('.fcoll:checked')].map(el => el.value);
   const total = collChecked.length === 1
     ? Object.values(T).filter(t => t.collection === collChecked[0]).length
     : Object.keys(T).length;
   document.getElementById('fcount').textContent = visible.size < total ? `${visible.size} of ${total} shown` : '';
+  declutterLabels();   // dimmed (filtered-out) markers should not show labels
 }
 
 function clearFilters() {
   document.getElementById('fsearch').value = '';
   document.querySelectorAll('.fcoll,.ffam,.fgenus,.fclass,.fconf,.fleaf-arch,.fendemic,.fconservation').forEach(el => { el.checked = false; });
+  // On the website embed the collection is locked via ?collection=; keep that lock
+  // on Clear so the map stays within the collection instead of revealing all of them
+  const lockColl = _activeCollection();
+  if (lockColl) {
+    const cb = document.querySelector(`.fcoll[value="${lockColl}"]`);
+    if (cb) cb.checked = true;
+  }
   rebuildTaxonFilters();
   applyFilters();
   const sb = document.querySelector('.filter-sidebar');
@@ -4874,8 +5340,9 @@ function applyURLParam() {
   document.getElementById('maplbl-title').textContent = `${collLabel} — Bermuda Botanical Gardens`;
   updateSpecimenCount();
 
-  // Hide Add Tree and Collection filter on website embed (URL param = public-facing page)
+  // Hide editing tools and the Collection filter on the website embed (URL param = public page)
   document.getElementById('addbtn').style.display = 'none';
+  const _mb = document.getElementById('movebtn'); if (_mb) _mb.style.display = 'none';
   document.getElementById('fsb-collection').style.display = 'none';
 
   // Show only the active collection in Survey Progress
@@ -4887,6 +5354,12 @@ function applyURLParam() {
 }
 
 applyURLParam();
+updateExportBtn();   // reflect any restored added/moved specimens on the Export button
+
+// Restore the Removed toggle and pull any removed specimens off the map on load
+try { showRemoved = localStorage.getItem('conifers_removed') === '1'; } catch(e){}
+document.getElementById('removedbtn').classList.toggle('active', showRemoved);
+applyFilters();
 
 // Fix grey tiles and off-centre view in Squarespace iframes.
 // Squarespace sets iframe dimensions asynchronously — the container can be the wrong
