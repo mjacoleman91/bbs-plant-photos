@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="conifer-map-version" content="0.6">
-<meta name="conifer-map-edited" content="2026-08-27">
+<meta name="conifer-map-edited" content="2026-09-02">
 <title>Bermuda Botanical Gardens — Interactive Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -101,6 +101,58 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
 .pt-act{font-size:12px;padding:5px 13px;cursor:pointer;border-radius:8px;border:1px solid #dde5d6;background:#fff}
 .pt-act:hover{background:#f4f7f2}
 .pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* ── FOCUS VIEW ── single-collection plan, tile-free, all names shown ── */
+#focusview{display:none;position:fixed;inset:0;z-index:1600;background:#f4f6f1;flex-direction:column;overflow:hidden}
+.fv-bar{background:#fff;border-bottom:1px solid #e2e7dd;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.fv-bar h1{font-size:16px;font-weight:700;color:#1a1a1a}
+.fv-bar #fv-hint{flex:1;font-size:12px;color:#8a938a}
+#fv-stage{flex:1;position:relative;overflow:hidden;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
+#fv-canvas{position:absolute;left:0;top:0;transform-origin:0 0}
+#fv-stage svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.fv-leader{stroke:#c2c8bf;stroke-width:.8;fill:none}
+.fv-dot{fill:#1D7D4D;stroke:#fff;stroke-width:1.5;pointer-events:none}
+.fv-hit{fill:transparent;pointer-events:all;cursor:pointer}
+#fv-sheet-handle{display:none}
+.fv-label{position:absolute;background:#fff;border:1px solid #d5ddce;border-radius:5px;padding:1px 5px;font-size:10px;line-height:1.3;color:#243b1f;box-shadow:0 1px 3px rgba(0,0,0,.12);white-space:nowrap;text-align:center;cursor:pointer}
+.fv-label:hover{border-color:#1D7D4D;box-shadow:0 1px 6px rgba(29,125,77,.3)}
+.fv-label em{font-style:italic;color:#3a5a2f}
+.fv-label .fv-cv{color:#1a1a1a;font-weight:600}
+.fv-chooser-bg{position:fixed;inset:0;z-index:1650;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px}
+.fv-chooser{background:#fff;border-radius:12px;padding:18px 20px;max-width:340px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.fv-chooser h2{font-size:15px;margin-bottom:4px}
+.fv-chooser p{font-size:12px;color:#666;margin-bottom:12px}
+.fv-chooser button{display:block;width:100%;margin:6px 0;padding:9px 11px;border-radius:8px;border:1px solid #dde5d6;background:#f4f7f2;font-size:13px;font-weight:600;cursor:pointer;text-align:left}
+.fv-chooser button:hover{background:#e8f0e4;border-color:#1D7D4D}
+.fv-chooser .fv-cancel{background:#fff;color:#888;font-weight:400;text-align:center}
+.fv-bed{fill:#1D7D4D;fill-opacity:.03;stroke:#c3c8bd;stroke-width:1;stroke-dasharray:5 5}
+.fv-dot.fv-sel{fill:#BA7517;stroke-width:2;r:6}
+.fv-label.fv-sel{border-color:#1D7D4D;background:#e7f4e6;box-shadow:0 0 0 2px rgba(29,125,77,.4);z-index:5}
+.fv-dot.fv-match{fill:#E8590C;stroke-width:2;r:6}
+.fv-label.fv-match{border-color:#E8590C;box-shadow:0 0 0 2px rgba(232,89,12,.35);z-index:6}
+.fv-bar #fv-search{padding:4px 9px;border:1px solid #dde5d6;border-radius:7px;font-size:12px;outline:none;font-family:inherit;width:150px;flex-shrink:0}
+#fv-tip{position:fixed;z-index:1710;background:#243b1f;color:#fff;font-size:11px;padding:3px 7px;border-radius:5px;pointer-events:none;white-space:nowrap;transform:translate(-50%,-150%);box-shadow:0 2px 8px rgba(0,0,0,.3);display:none}
+#fv-tip em{font-style:italic}
+#fv-tip .fv-cv{font-weight:600}
+/* selected plant's detail panel docks beside the plan */
+body.focus-mode.fv-panel-open .side{position:fixed;top:44px;right:0;bottom:0;width:360px;max-width:92vw;z-index:1700;overflow-y:auto;background:#fff;border-left:1px solid #ddd;box-shadow:-6px 0 24px rgba(0,0,0,.22);padding:10px;margin:0}
+body.focus-mode:not(.fv-panel-open) .side{display:none}
+body.focus-mode #survey-card{display:none}   /* survey progress isn't wanted in Focus */
+@media (min-width:769px){ body.focus-mode.fv-panel-open #fv-stage{width:calc(100% - 360px)} }
+/* "back to plan" button, shown while a panel is docked */
+#fv-panel-close{display:none;position:fixed;z-index:1720;width:30px;height:30px;border-radius:50%;border:1px solid #ccc;background:#fff;color:#333;font-size:16px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+body.focus-mode.fv-panel-open #fv-panel-close{display:block;top:50px;right:12px}
+/* phone: plan on top, detail as a bottom sheet so the plan stays visible */
+@media (max-width:768px){
+  .fv-bar{flex-wrap:wrap;padding:8px 10px;gap:7px}
+  .fv-bar h1{font-size:14px;width:100%}
+  .fv-bar #fv-hint{display:none}
+  .fv-bar #fv-search{flex:1;width:auto;min-width:120px}
+  body.focus-mode.fv-panel-open .side{top:auto;left:0;right:0;bottom:0;width:100%;max-width:100%;height:45vh;border-left:none;border-top:1px solid #ddd;box-shadow:0 -6px 24px rgba(0,0,0,.22);border-radius:14px 14px 0 0}
+  body.focus-mode.fv-panel-open #fv-panel-close{top:auto;bottom:calc(45vh - 15px);right:12px}
+  /* draggable bottom-sheet grab handle */
+  body.focus-mode.fv-panel-open #fv-sheet-handle{display:block;position:sticky;top:0;height:22px;margin:-10px -10px 4px;background:#fff;border-radius:14px 14px 0 0;cursor:grab;touch-action:none;z-index:2}
+  body.focus-mode.fv-panel-open #fv-sheet-handle::before{content:'';position:absolute;left:50%;top:9px;transform:translateX(-50%);width:38px;height:4px;border-radius:2px;background:#c7cec1}
+}
 .pc{border:1px solid #dde5d6;border-radius:10px;padding:13px;background:#fff;break-inside:avoid;page-break-inside:avoid}
 .pc-head{display:flex;align-items:center;gap:9px;margin-bottom:7px}
 .pc-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
@@ -203,6 +255,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
       <p class="maplbl" style="margin:0;flex:1"><span id="maplbl-title">Bermuda Botanical Gardens</span> &middot; <span id="speccount">182</span> specimens</p>
       <button class="addbtn" id="filterbtn" onclick="toggleMobileFilter()">Filter</button>
       <button class="printbtn" style="margin:0" onclick="openPrint()">List View</button>
+      <button class="addbtn" id="focusbtn" onclick="openFocus()" title="Full-screen clean plan of one collection with every name shown">Focus</button>
       <button class="addbtn" id="labelbtn" onclick="cycleLabels()" title="Show plant names on the map (off / tidied / all)">Names</button>
       <button class="addbtn" id="addbtn" onclick="toggleAddMode()">Add Tree</button>
       <button class="addbtn" id="movebtn" onclick="toggleMove()" title="Drag markers to reposition them, then copy the new coordinates into the Excel file">Move</button>
@@ -222,6 +275,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
   </div>
 
   <div class="side">
+    <div id="fv-sheet-handle" title="Drag to resize"></div>
     <div class="add-form-card" id="addcard">
       <p class="clbl">New specimen</p>
       <div class="add-field">
@@ -289,7 +343,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
         <div class="excel-flag" id="pexcelflag" style="display:none"></div>
       </div>
     </div>
-    <div class="card">
+    <div class="card" id="survey-card">
       <p class="clbl">Survey progress</p>
       <div id="prog-conifer">
         <div style="font-size:10px;font-weight:600;color:#0B6E5A;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Conifer Collection</div>
@@ -323,7 +377,7 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
           <div class="stat"><div class="snum" style="color:#888780" id="su-fic">0</div><div class="slbl">unknown</div></div>
         </div>
       </div>
-      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-08-27</div>
+      <div style="font-size:10px;color:#888;margin-top:8px;" id="version-stamp">Survey state v0.6 &middot; 2026-09-02</div>
     </div>
   </div>
 </div>
@@ -370,6 +424,22 @@ svg g[role=button]:focus-visible{outline:2px solid #378ADD;outline-offset:2px;bo
     <button class="pt-act" onclick="closePrint()">Close</button>
   </div>
   <div class="pt-grid" id="pt-grid"></div>
+</div>
+
+<!-- FOCUS VIEW (single-collection plan) -->
+<div id="focusview">
+  <div class="fv-bar">
+    <h1 id="fv-title">Focus</h1>
+    <input type="search" id="fv-search" placeholder="Find a plant…" oninput="fvSearch()" onkeydown="if(event.key==='Enter'){event.preventDefault();fvLocate();}" autocomplete="off">
+    <span id="fv-hint">Scroll to zoom &middot; drag to pan &middot; click a plant for details</span>
+    <button class="pt-act" onclick="fvZoom(1.25)" title="Zoom in">+</button>
+    <button class="pt-act" onclick="fvZoom(0.8)" title="Zoom out">&minus;</button>
+    <button class="pt-act" onclick="fvFit()" title="Fit to screen">Fit</button>
+    <button class="pt-act" onclick="closeFocus()">Close</button>
+  </div>
+  <div id="fv-stage"></div>
+  <div id="fv-tip"></div>
+  <button id="fv-panel-close" onclick="fvClosePanel()" title="Back to the plan">&times;</button>
 </div>
 
 <script>
@@ -4035,55 +4105,18 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxNativeZoom: 19
 }).addTo(map);
 
-// ── GARDEN BOUNDARY ───────────────────────────────────────────────────────────
-L.polygon([
-  [32.293749, -64.763386],  // C1
-  [32.293822, -64.762710],  // C2
-  [32.293442, -64.762516],  // C3
-  [32.293310, -64.762807],  // C4
-  [32.293403, -64.763266]   // C5
-], {
-  color: '#7aaa5a', weight: 2, dashArray: '6,4',
-  fillColor: '#c8ddb8', fillOpacity: 0.2,
-  interactive: false
-}).addTo(map);
-
-// ── ROSE GARDEN BOUNDARY ─────────────────────────────────────────────────────
-L.polygon([
-  [32.293502, -64.761557],  // C1 NE
-  [32.293359, -64.761466],  // C2 SE
-  [32.293265, -64.761680],  // C3 SW
-  [32.293390, -64.761838],  // C4 NW
-], {
-  color: '#C04070', weight: 1.5, dashArray: '6,4',
-  fillOpacity: 0,
-  interactive: false
-}).addTo(map);
-
-// ── PALM GARDEN BOUNDARY ─────────────────────────────────────────────────────
-L.polygon([
-  [32.291914, -64.764709],  // C1
-  [32.291989, -64.764446],  // C2
-  [32.291492, -64.764149],  // C4
-  [32.291385, -64.764373],  // C3
-], {
-  color: '#C89020', weight: 2, dashArray: '6 5',
-  fill: false,
-  interactive: false
-}).addTo(map);
-
-// ── FICUS GARDEN BOUNDARY ────────────────────────────────────────────────────
-L.polygon([
-  [32.291188, -64.765185],  // C1
-  [32.291372, -64.764805],  // C2
-  [32.291365, -64.764420],  // C3
-  [32.291270, -64.764335],  // C4
-  [32.290897, -64.764977],  // C5
-], {
-  color: '#6B3FA0', weight: 1.5, dashArray: '6,4',
-  fillOpacity: 0,
-  interactive: false
-}).addTo(map);
+// ── COLLECTION BOUNDARIES ─────────────────────────────────────────────────────
+// Perimeter of each collection, reused by the map overlays and the Focus plan.
+const COLLECTION_BOUNDS = {
+  Conifer: [[32.293749,-64.763386],[32.293822,-64.762710],[32.293442,-64.762516],[32.293310,-64.762807],[32.293403,-64.763266]],
+  Rose:    [[32.293502,-64.761557],[32.293359,-64.761466],[32.293265,-64.761680],[32.293390,-64.761838]],
+  Palm:    [[32.291914,-64.764709],[32.291989,-64.764446],[32.291492,-64.764149],[32.291385,-64.764373]],
+  Ficus:   [[32.291188,-64.765185],[32.291372,-64.764805],[32.291365,-64.764420],[32.291270,-64.764335],[32.290897,-64.764977]]
+};
+L.polygon(COLLECTION_BOUNDS.Conifer, {color:'#7aaa5a', weight:2,   dashArray:'6,4', fillColor:'#c8ddb8', fillOpacity:0.2, interactive:false}).addTo(map);
+L.polygon(COLLECTION_BOUNDS.Rose,    {color:'#C04070', weight:1.5, dashArray:'6,4', fillOpacity:0, interactive:false}).addTo(map);
+L.polygon(COLLECTION_BOUNDS.Palm,    {color:'#C89020', weight:2,   dashArray:'6 5', fill:false, interactive:false}).addTo(map);
+L.polygon(COLLECTION_BOUNDS.Ficus,   {color:'#6B3FA0', weight:1.5, dashArray:'6,4', fillOpacity:0, interactive:false}).addTo(map);
 
 // ── AREA LABELS ───────────────────────────────────────────────────────────────
 const AREA_LABELS = [
@@ -4668,6 +4701,7 @@ function showPanel(id, marker) {
   // Nav arrows
   currentId = id;
   if (labelState) declutterLabels();   // selected specimen outranks other labels
+  if (document.body.classList.contains('focus-mode')) highlightFocus(id);   // mirror selection in the plan
   const _navIds = navIds();
   const idx = _navIds.indexOf(id);
   const prevId = _navIds[(idx - 1 + _navIds.length) % _navIds.length];
@@ -4683,6 +4717,8 @@ function showPanel(id, marker) {
 }
 
 function navIds() {
+  // In Focus, prev/next cycle within the focused collection only (and reloop)
+  if (document.body.classList.contains('focus-mode') && fvIds) return fvIds;
   const col = _activeCollection();
   return col ? treeIds.filter(id => T[id].collection === col) : treeIds;
 }
@@ -4691,10 +4727,12 @@ function navTree(dir) {
   if (currentId === null) return;
   const ids = navIds();
   const idx = ids.indexOf(currentId);
-  const newId = ids[(idx + dir + ids.length) % ids.length];
+  const newId = ids[(idx + dir + ids.length) % ids.length];   // reloops at the ends
   showPanel(newId, markers[newId]);
-  const ll = L.latLng(T[newId].lat, T[newId].lng);
-  if (!map.getBounds().contains(ll)) map.panTo(ll);
+  if (!document.body.classList.contains('focus-mode')) {   // the map is hidden behind Focus — don't drift it
+    const ll = L.latLng(T[newId].lat, T[newId].lng);
+    if (!map.getBounds().contains(ll)) map.panTo(ll);
+  }
 }
 
 // ── PRINT / EXPORT ────────────────────────────────────────────────────────────
@@ -4805,6 +4843,402 @@ function rebuildLvTaxons() {
   document.getElementById('lvdd-species-wrap').style.display = species.length ? '' : 'none';
   // Hide Genus dropdown when trivially only one genus (e.g. Rose-only = just Rosa)
   document.getElementById('lvdd-genus-wrap').style.display = genera.length > 1 ? '' : 'none';
+}
+
+// ── FOCUS VIEW ────────────────────────────────────────────────────────────────
+// A tile-free, full-screen plan of one collection, scaled to fill the screen so
+// every name fits — labels fan out on leader lines. Zoom is a LAYOUT factor: it
+// spreads the dots apart and re-places labels, while labels keep their pixel size.
+function focusLabelHtml(id){
+  const t = T[id];
+  if (t.collection === 'Rose') {
+    // Roses go by their variety name, not a binomial
+    return `<span class="fv-cv">${t.name || t.sci || dispId(id)}</span>`;
+  }
+  const g = GENUS_ABBR[t.genus] || t.genus || '';
+  const sci = [g, t.species].filter(Boolean).join(' ');
+  const l1 = sci ? `<em>${sci}</em>` : (t.name || dispId(id));
+  const l2 = t.cultivar ? `<span class="fv-cv">&lsquo;${t.cultivar}&rsquo;</span>` : '';
+  return l2 ? `${l1}<br>${l2}` : l1;
+}
+
+let fvIds = null, fvColl = null;
+let fvZoomLvl = 1, fvPanX = 0, fvPanY = 0, fvCanvas = null, fvDrag = null, fvWired = false, fvL = null;
+let fvSide = {};            // remembered label side per plant (stability across zoom)
+let fvForce = new Set();    // ids whose labels are forced on (search matches)
+let fvDotPos = {};          // last-render dot positions, for search-to-pan
+let fvSheetH = null;        // current mobile bottom-sheet height (px)
+
+function openFocus(){
+  // One collection already in view (embed page, or filtered to one) → focus it directly.
+  // Otherwise (full map) ask which collection to focus.
+  const coll = _activeCollection() ||
+    (() => { const c = [...document.querySelectorAll('.fcoll:checked')].map(el => el.value); return c.length === 1 ? c[0] : null; })();
+  if (coll) startFocus(coll); else showFocusChooser();
+}
+
+function showFocusChooser(){
+  const colls = [...new Set(Object.values(T).map(t => t.collection).filter(Boolean))].sort();
+  const bg = document.createElement('div'); bg.className = 'fv-chooser-bg';
+  const box = document.createElement('div'); box.className = 'fv-chooser';
+  box.innerHTML = `<h2>Focus on a collection</h2><p>Pick which collection to show as a clean, full-screen plan.</p>`;
+  colls.forEach(c => {
+    const n = getFilteredIds().filter(id => T[id].collection === c && T[id].lat && T[id].lng).length;
+    const b = document.createElement('button');
+    b.innerHTML = `${c} Collection <span style="color:#888;font-weight:400">&mdash; ${n} shown</span>`;
+    b.onclick = () => { document.body.removeChild(bg); startFocus(c); };
+    box.appendChild(b);
+  });
+  const cancel = document.createElement('button'); cancel.className = 'fv-cancel'; cancel.textContent = 'Cancel';
+  cancel.onclick = () => document.body.removeChild(bg);
+  box.appendChild(cancel);
+  bg.appendChild(box);
+  bg.addEventListener('click', e => { if (e.target === bg) document.body.removeChild(bg); });
+  document.body.appendChild(bg);
+}
+
+function startFocus(coll){
+  // Honour the current filters (getFilteredIds already drops removed), then narrow to the collection
+  const ids = getFilteredIds().map(Number).filter(id => T[id] && T[id].collection === coll && T[id].lat && T[id].lng);
+  if (!ids.length){ alert(`No positioned ${coll.toLowerCase()} specimens to focus on.`); return; }
+  fvIds = ids; fvColl = coll;
+  fvSide = {}; fvForce = new Set();   // fresh label memory + no search carried over
+  const searchEl = document.getElementById('fv-search'); if (searchEl) searchEl.value = '';
+  // Dense collections open more spread out (labels need room); sparse ones fit.
+  fvZoomLvl = Math.min(2.5, Math.max(1, Math.sqrt(ids.length / 24)));
+  fvPanX = 0; fvPanY = 0;
+  document.getElementById('fv-title').textContent = `${coll} Collection — ${ids.length} specimen${ids.length === 1 ? '' : 's'}`;
+  document.getElementById('focusview').style.display = 'flex';
+  document.body.classList.add('focus-mode');
+  requestAnimationFrame(() => renderFocus(fvIds));
+}
+
+function closeFocus(){
+  document.getElementById('focusview').style.display = 'none';
+  document.body.classList.remove('focus-mode', 'fv-panel-open');
+  const side = document.querySelector('.side'); side.style.height = '';   // reset any mobile sheet height
+  const x = document.getElementById('fv-panel-close'); if (x) x.style.bottom = '';
+  fvSheetH = null;
+}
+
+// Dismiss the docked detail panel and return to the full-width plan (stays in Focus)
+function fvClosePanel(){
+  document.body.classList.remove('fv-panel-open');
+  const side = document.querySelector('.side'); side.style.height = '';   // drop any mobile sheet height
+  const x = document.getElementById('fv-panel-close'); if (x) x.style.bottom = '';
+  fvSheetH = null;
+  if (fvIds) renderFocus(fvIds);   // re-expand the plan into the reclaimed space
+}
+
+// ── Draggable mobile bottom sheet (peek / half / full detents) ──
+function fvDetents(){ const h = window.innerHeight; return [Math.round(h*0.16), Math.round(h*0.46), Math.round(h*0.82)]; }
+function fvSetSheet(px){
+  const d = fvDetents();
+  px = Math.max(d[0], Math.min(d[2], px));
+  fvSheetH = px;
+  document.querySelector('.side').style.height = px + 'px';
+  const x = document.getElementById('fv-panel-close'); if (x) x.style.bottom = (px - 15) + 'px';
+}
+function fvSnapSheet(){
+  const d = fvDetents(); let best = d[0], bd = Infinity;
+  d.forEach(v => { const diff = Math.abs(v - (fvSheetH || 0)); if (diff < bd){ bd = diff; best = v; } });
+  fvSetSheet(best);
+  fvSizeStage(); if (fvIds) renderFocus(fvIds);   // re-fit the plan to the new sheet height
+}
+function fvWireSheet(){
+  const handle = document.getElementById('fv-sheet-handle');
+  if (!handle || handle._wired) return; handle._wired = true;
+  let drag = null;
+  handle.addEventListener('pointerdown', e => { e.preventDefault(); handle.setPointerCapture(e.pointerId);
+    drag = {y:e.clientY, h:fvSheetH || document.querySelector('.side').offsetHeight}; });
+  handle.addEventListener('pointermove', e => { if (drag) fvSetSheet(drag.h + (drag.y - e.clientY)); });   // drag up = taller
+  const end = () => { if (drag){ drag = null; fvSnapSheet(); } };
+  handle.addEventListener('pointerup', end);
+  handle.addEventListener('pointercancel', end);
+}
+
+// Clicking a plant docks its detail panel beside the plan (which shrinks on first
+// open, desktop only) and highlights it in the plan — staying within Focus.
+function focusSelect(id){
+  const wasOpen = document.body.classList.contains('fv-panel-open');
+  document.body.classList.add('fv-panel-open');
+  if (!wasOpen && window.innerWidth <= 768){   // open the mobile sheet at the half detent
+    fvWireSheet(); fvSetSheet(fvDetents()[1]);
+  }
+  showPanel(parseInt(id), markers[id]);   // fills the panel; highlights via focus-mode
+  if (!wasOpen) renderFocus(fvIds);        // re-lay the plan into the narrower space
+}
+
+function highlightFocus(id){
+  document.querySelectorAll('#fv-stage .fv-sel').forEach(e => e.classList.remove('fv-sel'));
+  const lbl = document.querySelector(`#fv-stage .fv-label[data-id="${id}"]`); if (lbl) lbl.classList.add('fv-sel');
+  const dot = document.querySelector(`#fv-stage .fv-dot[data-id="${id}"]`);   if (dot) dot.classList.add('fv-sel');
+}
+
+function applyFvPan(){ if (fvCanvas) fvCanvas.style.transform = `translate(${fvPanX}px,${fvPanY}px)`; }
+function fvZoomAt(mx, my, factor){
+  if (!fvL) return;
+  const z0 = fvZoomLvl, z1 = Math.min(2.5, Math.max(0.4, z0 * factor));   // cap zoom-in
+  if (z1 === z0) return;
+  const es0 = fvL.baseScale * z0, ox0 = (fvL.W - fvL.spanX * es0) / 2, oy0 = (fvL.H - fvL.spanY * es0) / 2;
+  const wx = (mx - fvPanX - ox0) / es0, wy = (my - fvPanY - oy0) / es0;   // point under cursor, kept fixed
+  fvZoomLvl = z1;
+  const es1 = fvL.baseScale * z1, ox1 = (fvL.W - fvL.spanX * es1) / 2, oy1 = (fvL.H - fvL.spanY * es1) / 2;
+  fvPanX = mx - ox1 - wx * es1; fvPanY = my - oy1 - wy * es1;
+  renderFocus(fvIds);
+}
+function fvZoom(f){ const s = document.getElementById('fv-stage'); fvZoomAt(s.clientWidth / 2, s.clientHeight / 2, f); }
+function fvFit(){ fvZoomLvl = 1; fvPanX = 0; fvPanY = 0; renderFocus(fvIds); }
+function fvWireStage(){
+  if (fvWired) return; fvWired = true;
+  const stage = document.getElementById('fv-stage');
+  const pts = new Map();   // active pointers on the plan
+  let pinch = null;        // last two-finger distance while pinching
+  let lastTapT = 0, lastTapX = 0, lastTapY = 0;   // for double-tap detection
+
+  stage.addEventListener('wheel', e => { e.preventDefault(); const r = stage.getBoundingClientRect();
+    fvZoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.15 : 1 / 1.15); }, {passive:false});
+
+  stage.addEventListener('pointerdown', e => {
+    if (e.target.closest('.fv-label') || e.target.classList.contains('fv-hit') || e.target.classList.contains('fv-dot')) return;   // labels/dots handle their own taps
+    stage.setPointerCapture(e.pointerId);
+    pts.set(e.pointerId, {x:e.clientX, y:e.clientY, dn:e.clientX, dnY:e.clientY});
+    if (pts.size === 2){
+      const [a, b] = [...pts.values()];
+      pinch = Math.hypot(a.x - b.x, a.y - b.y);   // start pinch; suspend pan
+      fvDrag = null;
+    } else if (pts.size === 1){
+      fvDrag = {x:e.clientX, y:e.clientY, px:fvPanX, py:fvPanY};
+      stage.style.cursor = 'grabbing';
+    }
+  });
+
+  stage.addEventListener('pointermove', e => {
+    if (!pts.has(e.pointerId)) return;
+    const p = pts.get(e.pointerId); p.x = e.clientX; p.y = e.clientY;
+    if (pinch !== null && pts.size >= 2){
+      const [a, b] = [...pts.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch > 0){
+        const r = stage.getBoundingClientRect();
+        fvZoomAt((a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top, dist / pinch);   // zoom about the pinch centre
+      }
+      pinch = dist;
+    } else if (fvDrag && pts.size === 1){
+      fvPanX = fvDrag.px + (e.clientX - fvDrag.x); fvPanY = fvDrag.py + (e.clientY - fvDrag.y); applyFvPan();
+    }
+  });
+
+  const up = e => {
+    const p = pts.get(e.pointerId);
+    const moved = p ? Math.hypot(e.clientX - p.dn, e.clientY - p.dnY) : 99;
+    pts.delete(e.pointerId);
+    if (pts.size < 2) pinch = null;
+    if (pts.size === 0){
+      fvDrag = null; stage.style.cursor = 'grab';
+      if (moved < 6){   // a tap on empty plan
+        if (document.body.classList.contains('fv-panel-open')){
+          fvClosePanel();   // tap the map to dismiss the card (Google-style)
+        } else {
+          const now = Date.now();
+          if (now - lastTapT < 300 && Math.hypot(e.clientX - lastTapX, e.clientY - lastTapY) < 30){
+            const r = stage.getBoundingClientRect();
+            fvZoomAt(e.clientX - r.left, e.clientY - r.top, 1.6);   // double-tap to zoom in
+            lastTapT = 0;
+          } else { lastTapT = now; lastTapX = e.clientX; lastTapY = e.clientY; }
+        }
+      }
+    } else if (pts.size === 1){   // one finger left → resume panning from it
+      const [only] = [...pts.values()];
+      fvDrag = {x:only.x, y:only.y, px:fvPanX, py:fvPanY};
+    }
+  };
+  stage.addEventListener('pointerup', up);
+  stage.addEventListener('pointercancel', up);
+}
+
+// On a phone the detail sheet covers the bottom of the screen, so shrink the plan's
+// layout area to the visible strip above it (desktop shrinks width via CSS instead).
+function fvSizeStage(){
+  const stage = document.getElementById('fv-stage');
+  const mobilePanel = window.innerWidth <= 768 &&
+    document.body.classList.contains('focus-mode') && document.body.classList.contains('fv-panel-open');
+  if (mobilePanel){
+    const bar = document.querySelector('.fv-bar').offsetHeight || 0;
+    const sheet = document.querySelector('.side').offsetHeight || 0;
+    stage.style.flex = 'none';
+    stage.style.height = Math.max(140, window.innerHeight - bar - sheet) + 'px';
+  } else {
+    stage.style.flex = '';
+    stage.style.height = '';
+  }
+}
+
+function renderFocus(ids){
+  const stage = document.getElementById('fv-stage');
+  fvSizeStage();          // fit the plan into the space not covered by the mobile sheet
+  stage.innerHTML = '';
+  fvWireStage();
+  const canvas = document.createElement('div'); canvas.id = 'fv-canvas';
+  stage.appendChild(canvas); fvCanvas = canvas; applyFvPan();
+  const W = stage.clientWidth, H = stage.clientHeight, M = 140;   // margin for edge labels
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const latRef = ids.reduce((s, id) => s + T[id].lat, 0) / ids.length;
+  const kx = Math.cos(latRef * Math.PI / 180);
+  const proj = (lat, lng) => ({ X: lng * kx, Y: lat });
+  const P = ids.map(id => ({ id, ...proj(T[id].lat, T[id].lng) }));
+  // Include the collection perimeter in the fit so the whole bed shows on screen
+  const bed  = COLLECTION_BOUNDS[fvColl];
+  const bedP = (bed && bed.length >= 3) ? bed.map(c => proj(c[0], c[1])) : [];
+  const allX = [...P.map(p => p.X), ...bedP.map(p => p.X)];
+  const allY = [...P.map(p => p.Y), ...bedP.map(p => p.Y)];
+  const xmin = Math.min(...allX), xmax = Math.max(...allX), ymin = Math.min(...allY), ymax = Math.max(...allY);
+  const spanX = (xmax - xmin) || 1e-9, spanY = (ymax - ymin) || 1e-9;
+  const baseScale = Math.min((W - 2 * M) / spanX, (H - 2 * M) / spanY);
+  const scale = baseScale * fvZoomLvl;
+  const ox = (W - spanX * scale) / 2, oy = (H - spanY * scale) / 2;
+  const toPx = (X, Y) => [ ox + (X - xmin) * scale, oy + (ymax - Y) * scale ];   // invert Y so north is up
+  const dots = P.map(p => { const [x, y] = toPx(p.X, p.Y); return { id: p.id, x, y }; });
+  fvL = { baseScale, xmin, ymax, spanX, spanY, W, H };
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+
+  // faint collection perimeter for context
+  if (bedP.length >= 3){
+    const pts = bedP.map(p => toPx(p.X, p.Y).join(',')).join(' ');
+    const poly = document.createElementNS(svgNS, 'polygon');
+    poly.setAttribute('points', pts); poly.setAttribute('class', 'fv-bed');
+    svg.appendChild(poly);
+  }
+
+  // build + measure labels (offscreen), then place greedily with leader lines
+  const labels = dots.map(d => {
+    const el = document.createElement('div'); el.className = 'fv-label'; el.dataset.id = d.id; el.innerHTML = focusLabelHtml(d.id);
+    el.title = 'Click for details'; el.addEventListener('click', () => focusSelect(d.id));
+    el.style.left = '-9999px'; el.style.top = '0'; canvas.appendChild(el);
+    return { d, el, w: el.offsetWidth, h: el.offsetHeight };
+  }).sort((a, b) => (b.d.id === currentId) - (a.d.id === currentId) || a.d.y - b.d.y || a.d.x - b.d.x);   // selected first, then N→S
+
+  const DIRS = [[1,0],[-1,0],[0,-1],[0,1],[1,-1],[-1,-1],[1,1],[-1,1]];
+  // Keep labels close to their dot (short leaders). A label that can't fit near
+  // its own dot is culled, not flung across the plan on a long leader — so names
+  // thin out when zoomed out and fill back in as the dots spread on zoom-in.
+  const RAD = [12,20,30];
+  const placed = [], dotR = 5;
+  const hit = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+  const inFocus = document.body.classList.contains('focus-mode');
+  // Fan labels outward from the plan's centre so leaders radiate out instead of
+  // crossing back through the crowded middle.
+  const cX = dots.reduce((s, d) => s + d.x, 0) / dots.length;
+  const cY = dots.reduce((s, d) => s + d.y, 0) / dots.length;
+  let shown = 0;
+  labels.forEach(L => {
+    const {x, y} = L.d;
+    let ux = x - cX, uy = y - cY; const um = Math.hypot(ux, uy) || 1; ux /= um; uy /= um;   // outward unit vector
+    const dirs = DIRS.slice().sort((a, b) => {
+      const na = Math.hypot(a[0], a[1]), nb = Math.hypot(b[0], b[1]);
+      return (b[0]*ux + b[1]*uy) / nb - (a[0]*ux + a[1]*uy) / na;   // most-outward direction first
+    });
+    // Return a valid box for a given direction (nearest radius that fits), or null
+    const tryDir = (dx, dy) => {
+      for (const r of RAD){
+        const cx = x + dx * (r + L.w / 2), cy = y + dy * (r + L.h / 2);
+        const box = {x1: cx - L.w / 2, y1: cy - L.h / 2, x2: cx + L.w / 2, y2: cy + L.h / 2};
+        if (fvZoomLvl <= 1 && (box.x1 < 6 || box.y1 < 6 || box.x2 > W - 6 || box.y2 > H - 6)) continue;
+        if (placed.some(pb => hit(box, pb))) continue;
+        if (dots.some(dd => dd.x > box.x1 - dotR && dd.x < box.x2 + dotR && dd.y > box.y1 - dotR && dd.y < box.y2 + dotR)) continue;
+        return box;
+      }
+      return null;
+    };
+    let best = null, bestDir = null;
+    // Stability: reuse the side this label used last render if it still fits, so
+    // labels don't jump from side to side as you zoom.
+    const prev = fvSide[L.d.id];
+    if (prev){ const b = tryDir(prev[0], prev[1]); if (b){ best = b; bestDir = prev; } }
+    if (!best){ for (const [dx, dy] of dirs){ const b = tryDir(dx, dy); if (b){ best = b; bestDir = [dx, dy]; break; } } }
+
+    const forced = fvForce.has(L.d.id) || (L.d.id === currentId && inFocus);
+    if (!best){
+      // No clear spot: hide the label (its dot stays; zooming in reveals it) unless
+      // it's forced on — the selected plant, or a live search match.
+      if (forced){ best = {x1: x + 14, y1: y - L.h / 2, x2: x + 14 + L.w, y2: y + L.h / 2}; bestDir = [1, 0]; }
+      else { L.el.remove(); return; }
+    }
+    if (bestDir) fvSide[L.d.id] = bestDir;
+    placed.push(best); shown++;
+    if (fvForce.has(L.d.id)) L.el.classList.add('fv-match');
+    L.el.style.left = best.x1 + 'px'; L.el.style.top = best.y1 + 'px';
+    const ex = Math.max(best.x1, Math.min(x, best.x2)), ey = Math.max(best.y1, Math.min(y, best.y2));
+    const ln = document.createElementNS(svgNS, 'line');
+    ln.setAttribute('x1', x); ln.setAttribute('y1', y); ln.setAttribute('x2', ex); ln.setAttribute('y2', ey);
+    ln.setAttribute('class', 'fv-leader'); svg.appendChild(ln);
+  });
+
+  const hint = document.getElementById('fv-hint');
+  if (hint) hint.textContent = shown < ids.length
+    ? `${shown} of ${ids.length} names shown — zoom in for more · drag to pan · click for details`
+    : `All ${ids.length} names shown · drag to pan · click for details`;
+
+  // dots on top of the leaders — hover reveals the name even when its label is culled
+  fvDotPos = {};
+  dots.forEach(d => {
+    fvDotPos[d.id] = {x: d.x, y: d.y};
+    // visible dot (non-interactive — the hit circle below handles taps/hover)
+    const c = document.createElementNS(svgNS, 'circle');
+    c.setAttribute('cx', d.x); c.setAttribute('cy', d.y); c.setAttribute('r', 4);
+    c.setAttribute('class', 'fv-dot' + (fvForce.has(d.id) ? ' fv-match' : ''));
+    c.setAttribute('data-id', d.id);
+    svg.appendChild(c);
+    // larger transparent hit target so dots are easy to tap on a phone
+    const hc = document.createElementNS(svgNS, 'circle');
+    hc.setAttribute('cx', d.x); hc.setAttribute('cy', d.y); hc.setAttribute('r', 11);
+    hc.setAttribute('class', 'fv-hit'); hc.setAttribute('data-id', d.id);
+    hc.addEventListener('click', () => focusSelect(d.id));
+    hc.addEventListener('mouseenter', e => fvShowTip(d.id, e.clientX, e.clientY));
+    hc.addEventListener('mousemove',  e => fvMoveTip(e.clientX, e.clientY));
+    hc.addEventListener('mouseleave', fvHideTip);
+    svg.appendChild(hc);
+  });
+
+  canvas.insertBefore(svg, canvas.firstChild);
+  if (currentId != null) highlightFocus(currentId);   // keep the selection highlighted across re-renders
+}
+
+function fvShowTip(id, cx, cy){
+  const tip = document.getElementById('fv-tip');
+  tip.innerHTML = focusLabelHtml(id);
+  tip.style.left = cx + 'px'; tip.style.top = cy + 'px';
+  tip.style.display = 'block';
+}
+function fvMoveTip(cx, cy){ const tip = document.getElementById('fv-tip'); if (tip.style.display === 'block'){ tip.style.left = cx + 'px'; tip.style.top = cy + 'px'; } }
+function fvHideTip(){ const tip = document.getElementById('fv-tip'); if (tip) tip.style.display = 'none'; }
+
+// Live search: highlight + force-show matches. Deliberately does NOT move the view
+// on every keystroke — press Enter (fvLocate) to recentre on the matches.
+function fvSearch(){
+  const q = (document.getElementById('fv-search').value || '').toLowerCase().trim();
+  fvForce = new Set();
+  if (q && fvIds){
+    fvIds.forEach(id => {
+      const t = T[id];
+      const hay = `${dispId(id)} ${t.name||''} ${t.genus||''} ${t.species||''} ${t.cultivar||''} ${t.sci||''}`.toLowerCase();
+      if (hay.includes(q)) fvForce.add(id);
+    });
+  }
+  renderFocus(fvIds);
+}
+
+// Enter in the search box: one deliberate recentre on the current matches
+function fvLocate(){
+  if (!fvForce.size || !fvIds) return;
+  const pts = [...fvForce].map(id => fvDotPos[id]).filter(Boolean);
+  if (!pts.length) return;
+  const mx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+  const my = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+  const s = document.getElementById('fv-stage');
+  fvPanX = s.clientWidth / 2 - mx; fvPanY = s.clientHeight / 2 - my; applyFvPan();
 }
 
 function openPrint() {
@@ -5399,6 +5833,15 @@ document.getElementById('lb-close').addEventListener('click', closeLightbox);
 document.getElementById('lb-prev').addEventListener('click', () => lbNav(-1));
 document.getElementById('lb-next').addEventListener('click', () => lbNav(1));
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.fv-chooser-bg').forEach(el => el.remove());
+    if (document.getElementById('focusview').style.display === 'flex') {
+      const se = document.getElementById('fv-search');
+      if (se && se.value){ se.value = ''; fvSearch(); return; }           // clear the search first
+      if (document.body.classList.contains('fv-panel-open')){ fvClosePanel(); return; }   // then the docked panel
+      closeFocus(); return;                                                // then the whole view
+    }
+  }
   if (document.getElementById('lightbox').style.display !== 'flex') return;
   if (e.key === 'Escape')     closeLightbox();
   if (e.key === 'ArrowLeft')  lbNav(-1);
@@ -5407,6 +5850,9 @@ document.addEventListener('keydown', e => {
 document.addEventListener('click', e => {
   if (!e.target.closest('.lv-dropdown'))
     document.querySelectorAll('.lv-dd-panel').forEach(p => p.classList.remove('open'));
+});
+window.addEventListener('resize', () => {
+  if (document.getElementById('focusview').style.display === 'flex' && fvIds) renderFocus(fvIds);
 });
 </script>
 
