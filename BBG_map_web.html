@@ -4978,7 +4978,7 @@ function highlightFocus(id){
 function applyFvPan(){ if (fvCanvas) fvCanvas.style.transform = `translate(${fvPanX}px,${fvPanY}px)`; }
 function fvZoomAt(mx, my, factor){
   if (!fvL) return;
-  const z0 = fvZoomLvl, z1 = Math.min(2.5, Math.max(0.4, z0 * factor));   // cap zoom-in
+  const z0 = fvZoomLvl, z1 = Math.min(8, Math.max(0.4, z0 * factor));   // cap zoom-in (perimeter stays via overflow:visible)
   if (z1 === z0) return;
   const es0 = fvL.baseScale * z0, ox0 = (fvL.W - fvL.spanX * es0) / 2, oy0 = (fvL.H - fvL.spanY * es0) / 2;
   const wx = (mx - fvPanX - ox0) / es0, wy = (my - fvPanY - oy0) / es0;   // point under cursor, kept fixed
@@ -5000,17 +5000,18 @@ function fvWireStage(){
     fvZoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.15 : 1 / 1.15); }, {passive:false});
 
   stage.addEventListener('pointerdown', e => {
-    if (e.target.closest('.fv-label') || e.target.classList.contains('fv-hit') || e.target.classList.contains('fv-dot')) return;   // labels/dots handle their own taps
-    stage.setPointerCapture(e.pointerId);
-    pts.set(e.pointerId, {x:e.clientX, y:e.clientY, dn:e.clientX, dnY:e.clientY});
-    if (pts.size === 2){
+    const onPlant = e.target.closest('.fv-label') || e.target.classList.contains('fv-hit') || e.target.classList.contains('fv-dot');
+    pts.set(e.pointerId, {x:e.clientX, y:e.clientY, dn:e.clientX, dnY:e.clientY, onPlant});
+    if (pts.size >= 2){   // two fingers → pinch, wherever they landed
+      pts.forEach((_, id) => { try { stage.setPointerCapture(id); } catch(_){} });
       const [a, b] = [...pts.values()];
-      pinch = Math.hypot(a.x - b.x, a.y - b.y);   // start pinch; suspend pan
-      fvDrag = null;
-    } else if (pts.size === 1){
-      fvDrag = {x:e.clientX, y:e.clientY, px:fvPanX, py:fvPanY};
-      stage.style.cursor = 'grabbing';
+      pinch = Math.hypot(a.x - b.x, a.y - b.y); fvDrag = null; stage.style.cursor = 'grab';
+    } else if (!onPlant){   // lone finger on empty plan → pan
+      stage.setPointerCapture(e.pointerId);
+      fvDrag = {x:e.clientX, y:e.clientY, px:fvPanX, py:fvPanY}; stage.style.cursor = 'grabbing';
     }
+    // A lone finger on a dot/label is tracked (so a 2nd finger can still pinch)
+    // but not captured — its click fires as a tap; a drag becomes a pan below.
   });
 
   stage.addEventListener('pointermove', e => {
@@ -5024,19 +5025,24 @@ function fvWireStage(){
         fvZoomAt((a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top, dist / pinch);   // zoom about the pinch centre
       }
       pinch = dist;
-    } else if (fvDrag && pts.size === 1){
-      fvPanX = fvDrag.px + (e.clientX - fvDrag.x); fvPanY = fvDrag.py + (e.clientY - fvDrag.y); applyFvPan();
+    } else if (pts.size === 1){   // pan (start lazily so a tap on a dot still clicks)
+      if (!fvDrag && Math.hypot(e.clientX - p.dn, e.clientY - p.dnY) > 6){
+        try { stage.setPointerCapture(e.pointerId); } catch(_){}
+        fvDrag = {x:p.dn, y:p.dnY, px:fvPanX, py:fvPanY}; stage.style.cursor = 'grabbing';
+      }
+      if (fvDrag){ fvPanX = fvDrag.px + (e.clientX - fvDrag.x); fvPanY = fvDrag.py + (e.clientY - fvDrag.y); applyFvPan(); }
     }
   });
 
   const up = e => {
     const p = pts.get(e.pointerId);
     const moved = p ? Math.hypot(e.clientX - p.dn, e.clientY - p.dnY) : 99;
+    const wasOnPlant = p && p.onPlant;
     pts.delete(e.pointerId);
     if (pts.size < 2) pinch = null;
     if (pts.size === 0){
       fvDrag = null; stage.style.cursor = 'grab';
-      if (moved < 6){   // a tap on empty plan
+      if (moved < 6 && !wasOnPlant){   // a tap on empty plan, not a drag or a dot tap
         if (document.body.classList.contains('fv-panel-open')){
           fvClosePanel();   // tap the map to dismiss the card (Google-style)
         } else {
@@ -5048,9 +5054,9 @@ function fvWireStage(){
           } else { lastTapT = now; lastTapX = e.clientX; lastTapY = e.clientY; }
         }
       }
-    } else if (pts.size === 1){   // one finger left → resume panning from it
+    } else if (pts.size === 1){   // one finger left → resume panning from it (unless it's resting on a dot)
       const [only] = [...pts.values()];
-      fvDrag = {x:only.x, y:only.y, px:fvPanX, py:fvPanY};
+      fvDrag = only.onPlant ? null : {x:only.x, y:only.y, px:fvPanX, py:fvPanY};
     }
   };
   stage.addEventListener('pointerup', up);
@@ -5081,7 +5087,8 @@ function renderFocus(ids){
   fvWireStage();
   const canvas = document.createElement('div'); canvas.id = 'fv-canvas';
   stage.appendChild(canvas); fvCanvas = canvas; applyFvPan();
-  const W = stage.clientWidth, H = stage.clientHeight, M = 140;   // margin for edge labels
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const M = Math.max(36, Math.min(140, Math.min(W,H)*0.18));   // margin for edge labels, scaled so a short stage isn't swallowed
   canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
   const latRef = ids.reduce((s, id) => s + T[id].lat, 0) / ids.length;
   const kx = Math.cos(latRef * Math.PI / 180);
