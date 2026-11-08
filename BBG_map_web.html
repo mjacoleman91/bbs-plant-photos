@@ -4099,11 +4099,34 @@ recomputeStats();
 // Centred on Bermuda Botanical Gardens, 169 South Road, Paget Parish, Bermuda
 const map = L.map('map', {zoomControl: true}).setView([32.293470, -64.762235], 18);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  maxZoom: 21,
-  maxNativeZoom: 19
-}).addTo(map);
+// Basemaps. OSM Germany + Esri imagery both serve requests with no Referer, so
+// the map works when opened straight from disk (file://) as well as on the web.
+// Avoid: tile.openstreetmap.org ("Access blocked" without a Referer) and CARTO
+// (now needs an API key).
+const BASEMAPS = {
+  'Map': L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 21,
+    maxNativeZoom: 19
+  }),
+  'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics',
+    maxZoom: 21,
+    maxNativeZoom: 19
+  })
+};
+// OSM Germany renders tiles on demand: the first request for an uncached tile
+// can 404 while it is drawn. Retry a few times with backoff instead of leaving a gap.
+Object.values(BASEMAPS).forEach(layer => layer.on('tileerror', e => {
+  const t = e.tile; t._retry = (t._retry || 0) + 1;
+  if (t._retry > 3) return;
+  setTimeout(() => { t.src = layer.getTileUrl(e.coords) + '?retry=' + t._retry; }, 1500 * t._retry);
+}));
+let basemapName = 'Map';
+try { const b = localStorage.getItem('bbg_basemap'); if (b && BASEMAPS[b]) basemapName = b; } catch (e) {}
+BASEMAPS[basemapName].addTo(map);
+L.control.layers(BASEMAPS, null, { position: 'topright' }).addTo(map);
+map.on('baselayerchange', e => { try { localStorage.setItem('bbg_basemap', e.name); } catch (err) {} });
 
 // ── COLLECTION BOUNDARIES ─────────────────────────────────────────────────────
 // Perimeter of each collection, reused by the map overlays and the Focus plan.
